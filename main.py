@@ -5,6 +5,7 @@ from os import path
 from typing import Optional
 from threading import Timer
 from enum import Enum
+import pickle
 
 import selenium.webdriver.remote.webelement
 from selenium import webdriver
@@ -16,6 +17,27 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from refactor_info_txt import refactor_info_txt
+
+
+class Settings:
+    COOKIES_FILE = 'cookies.pkl'
+    LOCAL_STORAGE_FILE = 'local_storage.pkl'
+
+
+class User():
+    def __init__(self, name: str, phone_number: str, email: str, password: str, psc: str, products_path: str):
+        self.name = name
+        self.phone_number = phone_number
+        self.email = email
+        self.pasword = password
+        self.psc = psc
+        self.products_path = products_path
 
 
 class RepeatedTimer(object):
@@ -44,13 +66,13 @@ class RepeatedTimer(object):
         self.is_running = False
 
 
-def wait_n_seconds(*, seconds: int):
+def wait_n_seconds(seconds: int):
     for i in range(seconds):
         time.sleep(1)
         sys.stdout.write(f"\rwaiting {i + 1}s, until {seconds}s")
 
 
-def click_submit_by_value(*, submits: [WebElement], value: str):
+def click_submit_by_value(submits: [WebElement], value: str):
     for submit in submits:
         if submit.get_attribute('value') == value:
             submit.click()
@@ -142,8 +164,30 @@ class Product:
 
 class BazosScrapper:
     def __init__(self, url: str = ''):
-        self.url = 'https://www.bazos.cz/'
+        self.url_bazos = 'https://www.bazos.cz/'
+        self.url_moje_inzeraty = 'https://www.bazos.cz/moje-inzeraty.php'
         self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+
+    def save_authentication(self, user: User):
+        self.driver.get(self.url_moje_inzeraty)
+
+        # Prepare authentication
+        telefon_input = self.driver.find_element(By.NAME, 'telefon')
+        telefon_input.send_keys(user.phone_number)
+        click_submit_by_value(submits=self.driver.find_elements(By.NAME, 'Submit'), value='Ověřit')
+
+        # Authenticate
+        code_input = self.driver.find_element(By.NAME, 'klic')
+        code_input.send_keys(input('Please provide authentification code sended to your phone: '))
+        click_submit_by_value(submits=self.driver.find_elements(By.NAME, 'Submit'), value='Odeslat')
+
+        wait_n_seconds(20)
+
+        # Save cookies
+        pickle.dump(self.driver.get_cookies(), open(Settings.COOKIES_FILE, "wb"))
+        # Save Local Storage
+        pickle.dump(self.driver.execute_script("return window.localStorage;"), open(Settings.LOCAL_STORAGE_FILE, "wb"))
+
 
     # def load_my_advertisements(self):
     def remove_all_advertisements(self):
@@ -159,52 +203,51 @@ class BazosScrapper:
                 # TODO: I stuck here because "cookies or something else not working" and it need mobile check every time
                 wait_n_seconds(seconds=5)
 
-    def add_advertisements(self, path_dir: str):
+    def add_advertisements(self, user: User):
         # Prepare page
-        pridat = self.driver.find_element(By.CLASS_NAME, 'pridati')
-        pridat.click()
+        self.load_page_with_cookies(url=self.url_moje_inzeraty)
+        self.driver.find_element(By.CLASS_NAME, 'pridati').click()  # go to add page
+        wait_n_seconds(10)
 
         # Start adding
-        for dir in os.listdir(path=path_dir):
-            product_path = path.join(path_dir, dir)
-            product = Product(product_path=product_path)
-            print(product.name)
-            self.add_advertisement(path_dir=product_path, product_info=product)
-            break
+        # for dir in os.listdir(path=user.products_path):
+        #     product_path = path.join(user.products_path, dir)
+        #     product = Product(product_path=product_path)
+        #     print(product.name)
+        #     self.add_advertisement(path_dir=product_path, product_info=product)
+        #     break
 
-    def load_cookies_on_url(self):
-        # telefon_input.send_keys('773274707')
-        self.driver.get(self.url)
+    def load_page_with_cookies(self, url: str):
+        self.driver.get(url)
+        # for cookie_dict in pickle.load(open('cookies.pkl', 'rb')):
+        #     for key, value in cookie_dict.items():
+        #         print({"name": key, "value": value})
+                # self.driver.add_cookie({"name": key, "value": value})
+            # break
 
-        cookie_dict = {
-            '__gsync': '1:YTU6Nzk6MTY1OTI3Nzg5NDYyOToxMToxNjU5MjY5NjUxMjQ0OmExMTphMjoxMDE6ODI0MzM4NDphMjoxMDc6ODI0MzM4NTphMjoxMDg6MzE0MjphMjoxMDk6ODI0MzM4NTphMjoxMTA6ODI0MzM4NTphMjoxMTE6MzE0MjphMjoxMTI6MzE0MjphMjoxMTM6ODI0MzM4NTphMjoxMTY6MDphMjoxMTc6MzE0MjphMjoxMTg6MzE0Mg__',
-            '__gsync_gdpr': '1:YTU6bjpuOjE2NTk5ODQ3NTIzOTc6MTY1OTk4NDc1MjM5Nzpu',
-            'bmail': 'zlapes%40seznam.cz',
-            'bjmeno': 'Zdenek',
-            'testcookieaaa': 'ano',
-            '__gfp_64b': 'd_2FVk9XM1VVU2BcxgUmPLqO2utfTILgFEfRDQ4BT.z.C7|1659269650',
-            'bid': '55054902',
-            'testcookie': 'ano',
-            'rekk': 'ano',
-            'btelefon': '773274707',
-            'testcookieaaa': 'ano',
-            'bkod': '36HU739H18'
-        }
-
-        for key, value in cookie_dict.items():
-            self.driver.add_cookie({"name": key, "value": value})
-
-        self.driver.get(self.url)
+        for key, value in pickle.load(open('cookies.pkl', 'rb'))[-1].items():
+                print({"name": key, "value": value})
+            # self.driver.add_cookie({"name": key, "value": value})
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.driver.quit()
 
 
 def main():
-    url = "https://www.bazos.cz/moje-inzeraty.php"
+    user = User(name='Zdenek', phone_number='773274707', email='zlapes@seznam.cz',
+                password=os.getenv('USER_PASSWORD_KEY'), psc='60200',
+                products_path='/Users/zlapik/Documents/photos-archive/bazos/main-zlapes')
+
+    # refactor_info_txt(user.products_path)
+    # return
+
+    # Start advertising
     bazos_scrapper = BazosScrapper()
-    # bazos_scrapper.load_cookies_on_url()
-    bazos_scrapper.add_advertisements(path_dir='/Users/zlapik/Documents/photos-archive/bazos/main-zlapes')
+    if not os.path.isfile(Settings.COOKIES_FILE) or not os.path.isfile(Settings.LOCAL_STORAGE_FILE):
+        bazos_scrapper.save_authentication(user=user)
+        print(pickle.load(open(Settings.COOKIES_FILE, 'rb')))
+        print(pickle.load(open(Settings.LOCAL_STORAGE_FILE, 'rb')))
+    # bazos_scrapper.add_advertisements(user=user)
 
 
 if __name__ == '__main__':
