@@ -200,6 +200,11 @@ class BazosScrapper:
         self.driver.find_element(By.ID, 'heslobazar').clear()
         self.driver.find_element(By.ID, 'heslobazar').send_keys(user.pasword)
 
+        # TODO: Not working
+        # self.driver.find_element(By.ID, 'uploadbutton').click()
+        # self.driver.find_element(By.ID, 'uploadbutton').send_keys('\n'.join(product.images))
+        # wait_n_seconds(100)
+
         wait_random_time()
         self.driver.find_element(By.CLASS_NAME, 'ovse').click()
         self.driver.find_element(By.NAME, 'souborp[]').send_keys('\n'.join(product.images))
@@ -228,6 +233,7 @@ class BazosScrapper:
             wait_random_time()
             self.go_to_rubric(product=product)
             self.add_advertisement(product=product, user=user)
+            break
 
     def load_page_with_cookies(self, url: str = ''):
         self.driver.get(self.url_moje_inzeraty)
@@ -254,7 +260,7 @@ def main():
         bazos_scrapper.save_authentication(user=user)
 
     # Restore advertisements
-    bazos_scrapper.remove_advertisements(user=user)
+    # bazos_scrapper.remove_advertisements(user=user)
     bazos_scrapper.add_advertisements(user=user)
 
 
