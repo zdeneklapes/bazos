@@ -27,7 +27,7 @@ class Product:
     def get_images(self):
         images = sorted(map(lambda x: path.join(self.product_path, 'photos', x),
                             next(os.walk(path.join(self.product_path, 'photos')))[2]))
-        return [filename for filename in self.images if
+        return [filename for filename in images if
                 filename.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif'))]
 
     def get_current_section(self, line) -> str:
