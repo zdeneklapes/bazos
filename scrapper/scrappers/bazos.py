@@ -125,10 +125,11 @@ class BazosScrapper:
     def add_advertisements(self, user: User):
         self.load_page_with_cookies(url=self.url_moje_inzeraty)
         for dir in os.listdir(path=user.products_path):
-            print(dir)
-
-            if not path.isdir(dir):
+            if not path.isdir(path.join(user.products_path, dir)):
+                print(f"Skipping {dir}")
                 continue
+            else:
+                print(dir)
 
             wait_random_time()
             self.driver.find_element(By.CLASS_NAME, 'pridati').click()  # go to add page

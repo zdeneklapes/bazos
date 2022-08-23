@@ -12,15 +12,23 @@ product_info = {
 
 class Product:
     def __init__(self, product_path):
+        self.product_path = product_path
+
         self.rubric = ''
         self.category = ''
         self.title = ''
         self.price = ''
         self.description = ''
-        self.images = sorted(map(lambda x: path.join(product_path, 'photos', x),
-                                 next(os.walk(path.join(product_path, 'photos')))[2]))
+        self.images = self.get_images()
+
         #
-        self.load_product(product_dir=product_path)
+        self.load_product_info(product_dir=product_path)
+
+    def get_images(self):
+        images = sorted(map(lambda x: path.join(self.product_path, 'photos', x),
+                            next(os.walk(path.join(self.product_path, 'photos')))[2]))
+        return [filename for filename in self.images if
+                filename.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif'))]
 
     def get_current_section(self, line) -> str:
         for key, value in product_info.items():
@@ -29,7 +37,7 @@ class Product:
 
         raise Exception(f"Key not found: key={key}, value={value}, line={line}")
 
-    def load_product(self, *, product_dir):
+    def load_product_info(self, *, product_dir):
         # NOTE: Rewrite this shit code
         with open(file=path.join(product_dir, 'info.txt'), mode='r') as file:
             for line in file.readlines():
