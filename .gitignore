@@ -8,7 +8,7 @@ others/
 doc/**
 !doc/Doxyfile
 others/
-src/.env
+scrapper/.env
 
 .idea/
 .cache/
