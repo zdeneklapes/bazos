@@ -5,7 +5,7 @@ from os import path
 from typing import Dict, Any, Callable
 from glob import glob
 
-from bazos.bazos import bazos
+from bazos import bazos as bz
 
 
 def parse_cli_argument() -> Dict[str, Any]:
@@ -19,6 +19,6 @@ if __name__ == '__main__':
     cli_args = parse_cli_argument()
 
     if cli_args['bazos']:
-        bazos()
+        bz()
 
     sys.exit()

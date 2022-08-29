@@ -1,2 +1,2 @@
-COOKIES_FILE = 'cookies.pkl'
-LOCAL_STORAGE_FILE = 'local_storage.pkl'
+COOKIES_FILE = 'user_info/cookies.pkl'
+LOCAL_STORAGE_FILE = 'user_info/local_storage.pkl'
