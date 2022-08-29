@@ -20,11 +20,12 @@ from selenium.webdriver.support.ui import Select
 import yaml
 from dotenv import load_dotenv
 
-from shared.refactor_info_txt import refactor_info_txt
-from shared.utils import parse_yaml, wait_random_time
-from info.product import Product
-import info.settings as settings
-from info.user import User
+# from shared.refactor_info_txt import refactor_info_txt
+# from shared.utils import parse_yaml, wait_random_time
+# from info.product import Product
+# import info.settings as settings
+# from info.user import User
+from .. import shared
 
 load_dotenv()
 
