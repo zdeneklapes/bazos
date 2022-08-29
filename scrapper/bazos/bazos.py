@@ -151,18 +151,7 @@ class BazosScrapper:
 
 
 def bazos():
-    path_to_all = sys.argv[1] if len(sys.argv) > 2 and path.isdir(
-        sys.argv[1]) else '/Users/zlapik/Documents/photos-archive/bazos'
-    user_info = parse_yaml(filename=path.join(path_to_all, 'user.yml'))
-
-    user = User(name=user_info['name'],
-                phone_number=user_info['phone_number'],
-                email=user_info['email'],
-                password=user_info['password'],
-                psc=user_info['psc'],
-                products_path=path_to_all)
-
-    # Start advertising
+    user = get_user()
     bazos_scrapper = BazosScrapper()
 
     # Prepare Cookies
