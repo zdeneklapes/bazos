@@ -1,9 +1,4 @@
 import os
-
-print(__name__)
-print(__package__)
-print(os.getcwd())
-
 import sys
 import time
 from os import path
@@ -70,7 +65,7 @@ class BazosScrapper:
   def remove_advertisment(self, user: User):
     self.driver.find_element(By.CLASS_NAME, 'inzeratydetdel').find_element(By.TAG_NAME, 'a').click()
     self.driver.find_element(By.NAME, 'heslobazar').clear()
-    self.driver.find_element(By.NAME, 'heslobazar').send_keys(user.pasword)
+    self.driver.find_element(By.NAME, 'heslobazar').send_keys(user.password)
     click_submit_by_value(self.driver.find_elements(By.NAME, 'administrace'), 'Vymazat')
 
   def remove_advertisements(self, user: User):
@@ -101,7 +96,7 @@ class BazosScrapper:
     self.driver.find_element(By.ID, 'maili').clear()
     self.driver.find_element(By.ID, 'maili').send_keys(user.email)
     self.driver.find_element(By.ID, 'heslobazar').clear()
-    self.driver.find_element(By.ID, 'heslobazar').send_keys(user.pasword)
+    self.driver.find_element(By.ID, 'heslobazar').send_keys(user.password)
 
     # TODO: Not working
     # self.driver.find_element(By.ID, 'uploadbutton').click()
@@ -124,18 +119,23 @@ class BazosScrapper:
         break
 
   def add_advertisements(self, user: User):
-    def product_already_advertised(products: [Product]) -> bool:
+    def product_already_advertised(product: Product) -> bool:
       self.load_page_with_cookies(url=self.url_moje_inzeraty)
-      for title in [prod.title for prod in products]:
-        nadpis = self.driver.find_element(By.CLASS_NAME, 'nadpis')
-        if title in nadpis.text:
+      for nadpis in self.driver.find_elements(By.CLASS_NAME, 'nadpis'):
+        if product.title in nadpis.text:
           return True
+      return False
 
     self.load_page_with_cookies(url=self.url_moje_inzeraty)
     products = get_all_products(products_path=user.products_path)
+
+    print("==> Adding advertisements")
     for product in products:
-      if product_already_advertised(products):
+      if product_already_advertised(product):
+        print(f"Skipping: {product.product_path}")
         continue
+
+      print(f"Adding: {product.product_path}")
 
       # product not advertised ADD them
       wait_random_time()
@@ -144,27 +144,6 @@ class BazosScrapper:
       wait_random_time()
       self.go_to_rubric(product=product)
       self.add_advertisement(product=product, user=user)
-
-  # for dir in os.listdir(path=user.products_path):
-  #   if not path.isdir(path.join(user.products_path, dir)):
-  #     print(f"Skipping {dir}")
-  #     continue
-  #   else:
-  #     # BUG: imac-2017-27 crashes
-  #     print(dir)
-  #
-  #   # fixing BUG
-  #   if 'imac-2017-27' not in dir:
-  #     continue
-  #
-  #   wait_random_time()
-  #   self.driver.find_element(By.CLASS_NAME, 'pridati').click()  # go to add page
-  #   product_path = path.join(user.products_path, dir)
-  #   product = Product(product_path=product_path)
-  #
-  #   wait_random_time()
-  #   self.go_to_rubric(product=product)
-  #   self.add_advertisement(product=product, user=user)
 
   def load_page_with_cookies(self, url: str = ''):
     self.driver.get(self.url_moje_inzeraty)
@@ -185,7 +164,9 @@ def bazos():
     bazos_scrapper.save_authentication(user=user)
 
   # Restore advertisements
-  # bazos_scrapper.remove_advertisements(user=user)
+  if '--add-only' not in sys.argv:
+    bazos_scrapper.remove_advertisements(user=user)
+
   bazos_scrapper.add_advertisements(user=user)
 
 

@@ -62,6 +62,7 @@ class Product:
 
 
 def get_all_products(products_path) -> [Product]:
+  print("==> Loading products")
   products = []
   for dir in os.listdir(path=products_path):
     product_path = path.join(products_path, dir)
