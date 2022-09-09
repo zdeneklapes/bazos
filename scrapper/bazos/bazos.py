@@ -15,6 +15,7 @@ from core import settings
 from scrapper.info.product import Product, get_all_products
 from scrapper.info.user import User
 from scrapper.shared.utils import wait_random_time
+from .country import Country
 
 load_dotenv()
 
@@ -30,9 +31,10 @@ def click_submit_by_value(submits: [WebElement], value: str):
 
 
 class BazosScrapper:
-  def __init__(self, url: str = ''):
-    self.url_bazos = ['https://www.bazos.cz/', 'https://www.bazos.sk/']
-    self.url_moje_inzeraty = map(lambda bazos_country: path.join(bazos_country, 'moje-inzeraty.php'), self.url_bazos)
+  def __init__(self, country: Country):
+    self.bazos_country = country
+    self.url_bazos = f"https://bazos.{country.value}"
+    self.url_moje_inzeraty = path.join(self.url_bazos, 'moje-inzeraty.php')
     self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
   def save_authentication(self, user: User):
@@ -51,7 +53,7 @@ class BazosScrapper:
     click_submit_by_value(submits=self.driver.find_elements(By.NAME, 'Submit'), value='Odeslat')
 
     # Save cookies
-    pickle.dump(self.driver.get_cookies(), open(settings.COOKIES_FILE_CZ, "wb"))
+    pickle.dump(self.driver.get_cookies(), open(f"{settings.COOKIES_FILE}_{self.bazos_country}.pkl", "wb"))
     # Save Local Storage
     pickle.dump(self.driver.execute_script("return window.localStorage;"), open(settings.LOCAL_STORAGE_FILE_CZ, "wb"))
 
@@ -120,7 +122,7 @@ class BazosScrapper:
       return False
 
     self.load_page_with_cookies(url=self.url_moje_inzeraty)
-    products = get_all_products(products_path=user.products_path)
+    products = get_all_products(products_path=user.products_path, country=self.bazos_country)
 
     print("==> Adding advertisements")
     for product in products:
@@ -150,17 +152,20 @@ class BazosScrapper:
 
 def bazos():
   user = User()
-  bazos_scrapper = BazosScrapper()
 
-  # Prepare Cookies
-  if not os.path.isfile(settings.COOKIES_FILE_CZ) or not os.path.isfile(settings.LOCAL_STORAGE_FILE_CZ):
-    bazos_scrapper.save_authentication(user=user)
+  for country in list(Country):
+    bazos_scrapper = BazosScrapper(country=country)
 
-  # Restore advertisements
-  if '--add-only' not in sys.argv:
-    bazos_scrapper.remove_advertisements(user=user)
+    # Prepare Cookies
+    if (not os.path.isfile(f"{settings.COOKIES_FILE}_{country.value}.pkl")
+      or not os.path.isfile(f"{settings.LOCAL_STORAGE_FILE}_{country.value}.pkl")):
+      bazos_scrapper.save_authentication(user=user)
 
-  bazos_scrapper.add_advertisements(user=user)
+    # Restore advertisements
+    if '--add-only' not in sys.argv:
+      bazos_scrapper.remove_advertisements(user=user)
+
+    bazos_scrapper.add_advertisements(user=user)
 
 
 if __name__ == '__main__':

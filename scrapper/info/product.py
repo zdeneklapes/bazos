@@ -1,6 +1,11 @@
 import os
 from os import path
 
+from colorama import Fore, Back, Style
+from forex_python.converter import CurrencyRates
+
+from scrapper.bazos.country import Country
+
 product_info = {
   'rubric': '>>RUBRIC',
   'category': '>>CATEGORY',
@@ -11,7 +16,8 @@ product_info = {
 
 
 class Product:
-  def __init__(self, product_path):
+  def __init__(self, product_path: str, country: Country):
+    self.country = country
     self.product_path = product_path
 
     self.rubric = ''
@@ -55,21 +61,25 @@ class Product:
         elif product_info[current_product_info_key] == product_info['title']:
           self.title = line.strip()
         elif product_info[current_product_info_key] == product_info['price']:
-          self.price = line.strip()
+          if self.country == Country.CZ:
+            self.price = line.strip()
+          else:
+            self.price = int(int(line.strip()) / (CurrencyRates().get_rate('CZK', 'EUR') - 2))
         # NOTE: Only here we appending line, must be at the end of info.txt
         elif product_info[current_product_info_key] == product_info['description']:
           self.description += line
 
 
-def get_all_products(products_path) -> [Product]:
+def get_all_products(products_path: str, country: Country) -> [Product]:
   print("==> Loading products")
+
   products = []
   for dir in os.listdir(path=products_path):
     product_path = path.join(products_path, dir)
     if path.isdir(product_path):
-      products.append(Product(product_path=product_path))
+      products.append(Product(product_path=product_path, country=country))
     else:
-      print(f"Skipping {dir}")
+      print(f"{Fore.RED}ERROR: Skipping not folder '{dir}'{Fore.RESET}")
   return products
 
 
