@@ -14,7 +14,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from core import settings
 from scrapper.info.product import Product, get_all_products
 from scrapper.info.user import User
-from scrapper.shared.utils import wait_random_time, wait_n_seconds
+from scrapper.shared.utils import wait_random_time
 from .country import Country
 
 load_dotenv()
@@ -58,8 +58,6 @@ class BazosScrapper:
         # Save Local Storage
         pickle.dump(self.driver.execute_script("return window.localStorage;"),
                     file=open(f"{settings.LOCAL_STORAGE_FILE}_{self.bazos_country.value}.pkl", "wb"))
-
-        wait_n_seconds(30)
 
     def remove_advertisment(self, user: User):
         self.driver.find_element(By.CLASS_NAME, 'inzeratydetdel').find_element(By.TAG_NAME, 'a').click()
@@ -146,7 +144,7 @@ class BazosScrapper:
 
     def load_page_with_cookies(self, url: str = ''):
         self.driver.get(self.url_moje_inzeraty)
-        for cookie_dict in pickle.load(open(settings.COOKIES_FILE_CZ, 'rb')):
+        for cookie_dict in pickle.load(open(f"{settings.COOKIES_FILE}_{self.bazos_country.value}.pkl", 'rb')):
             self.driver.add_cookie(cookie_dict)
         self.driver.get(self.url_moje_inzeraty)
 
@@ -156,6 +154,12 @@ class BazosScrapper:
 
 def bazos(cli_args: vars):
     for country in list(Country):
+        # TODO: Error that bazos.cz page don't have same values (texts) in buttons as bazos.sk,
+        # so I must to click on button based on id, classes or tags
+        if country == Country.SK:
+            continue
+
+        #
         user = User(country=country, products_path=cli_args['path'])
         bazos_scrapper = BazosScrapper(country=country)
 

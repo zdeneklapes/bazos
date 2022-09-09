@@ -79,7 +79,7 @@ def get_all_products(products_path: str, country: Country) -> [Product]:
     if path.isdir(product_path):
       products.append(Product(product_path=product_path, country=country))
     else:
-      print(f"{Fore.RED}ERROR: Skipping not folder '{dir}'{Fore.RESET}")
+      print(f"{Fore.RED}WARNING: Skipping not folder '{dir}'{Fore.RESET}")
   return products
 
 
