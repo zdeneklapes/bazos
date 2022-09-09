@@ -2,7 +2,7 @@ import sys
 from os import path
 from typing import Union, Optional
 
-from shared.utils import parse_yaml
+from scrapper.shared.utils import parse_yaml
 
 
 # TODO: @dataclass maybe

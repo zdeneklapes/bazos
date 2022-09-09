@@ -5,7 +5,7 @@ from os import path
 from typing import Dict, Any, Callable
 from glob import glob
 
-from bazos import bazos as bz
+from scrapper.bazos import bazos as bz
 
 
 def parse_cli_argument() -> Dict[str, Any]:
