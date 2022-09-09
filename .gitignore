@@ -1,61 +1,30 @@
-
-others/
-
-# files
+# macOS
 .DS_Store
 
 # dirs
-doc/**
-!doc/Doxyfile
 others/
 scrapper/.env
 
-.idea/
-.cache/
 venv/
+
+# ide
+.idea/
+
+
+# cache
+.cache/
 __pycache__/
-*.log
-log/
+*.pytest_cache/
+*.cache
+
+# logs
+logs/
+
+# project setup.py
 *.egg-info/
+
+# env
 *.env
 
-# can be obtained by command: qmake
-*.cache
-*.qmake.stash
-*.qtc_clangd
-*.user
-*.zip
+# cookies
 *.pkl
-
-# Prerequisites
-*.d
-
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
