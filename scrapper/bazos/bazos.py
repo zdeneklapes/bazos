@@ -68,11 +68,13 @@ class BazosScrapper:
     def remove_advertisements(self, user: User):
         self.load_page_with_cookies(url=self.url_moje_inzeraty)
         while len(self.driver.find_elements(By.CLASS_NAME, 'nadpis')) != 0:
+            print(f"Removing[1/{len(self.driver.find_elements(By.CLASS_NAME, 'nadpis'))}]: {self.driver.find_element(By.CLASS_NAME, 'nadpis').text}")
             wait_random_time()
             self.driver.find_element(By.CLASS_NAME, 'nadpis').find_element(By.TAG_NAME, 'a').click()
             wait_random_time()
             self.remove_advertisment(user=user)
             wait_random_time()
+
 
     def add_advertisement(self, product: Product, user: User):
         Select(self.driver.find_element(By.NAME, 'rubrikyvybrat')).select_by_visible_text(product.rubric)
