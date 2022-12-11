@@ -113,7 +113,7 @@ class BazosScrapper:
         sections = self.driver.find_elements(By.CLASS_NAME, 'iconstblcell')
         for icon in sections:
             a = icon.find_element(By.TAG_NAME, 'a')
-            if a.accessible_name == product.rubric:
+            if a.accessible_name.strip() == product.rubric:
                 a.click()
                 break
 
