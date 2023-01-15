@@ -14,8 +14,10 @@ from webdriver_manager.chrome import ChromeDriverManager
 from core import settings
 from scrapper.info.product import Product, get_all_products
 from scrapper.info.user import User
-from scrapper.shared.utils import wait_random_time
-from .country import Country
+from scrapper.common.utils import wait_random_time
+from scrapper.common.country import Country
+
+from scrapper.info.rubric_category import get_rubric, get_category
 
 load_dotenv()
 
@@ -30,27 +32,89 @@ def click_submit_by_value(submits: [WebElement], value: str):
             submit.click()
 
 
+class XPathsBazos:
+    select_rubrik = "//div[@class='maincontent']/div[1]/form/select"
+    select_category = "//div[@class='maincontent']/form/div[1]/select"
+    user_inputs = "//div[@class='maincontent']/form/input"
+    delete_pwd_input = "//div[@class='maincontent']/div[2]/form/input[1]"
+    delete_submit = "//div[@class='maincontent']/div[2]/form/input[4]"
+
+    auth_phone_input = "//div[@class='maincontent']/form/input[2]"
+    auth_phone_submit = "//div[@class='maincontent']/form/input[4]"
+    auth_code_input = "//div[@class='maincontent']/div[1]/form/input[1]"
+    auth_code_submit = "//div[@class='maincontent']/div[1]/form/input[3]"
+
+    product_submit = "//div[@class='maincontent']/form/div/input[6]"
+    product_rubric = "//div[@class='maincontent']/div[1]/form/select"
+    product_category = "//div[@class='maincontent']/form/div[1]/select"
+    product_img_input = "//div[@class='maincontent']/form/div[1]/input[3]"
+
+
 class BazosScrapper:
-    def __init__(self, country: Country):
+    def __init__(self, country: Country, cli_args: dict):
+        self.user = User(country=country, products_path=cli_args['path'])
         self.bazos_country = country
+        self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+        self.advertisements: int
+
+        # URLs
         self.url_bazos = f"https://bazos.{country.value}"
         self.url_moje_inzeraty = path.join(self.url_bazos, 'moje-inzeraty.php')
-        self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
-    def save_authentication(self, user: User):
+    def print_all_rubrics_and_categories(self):
+        self.driver.find_element(By.CLASS_NAME, 'pridati').click()  # go to add page
+        sections = self.driver.find_elements(By.CLASS_NAME, 'iconstblcell')
+        sections[0].find_element(By.TAG_NAME, 'a').click()
+        select_rubrik = Select(self.driver.find_element(By.XPATH, XPathsBazos.select_rubrik))
+
+        _dict = {}
+        rubric_options = [opt.text for opt in select_rubrik.options]
+        for option in rubric_options:
+
+            # Rubric
+            Select(self.driver.find_element(By.XPATH, XPathsBazos.select_rubrik)).select_by_visible_text(option)
+
+            # Category
+            select_category = Select(self.driver.find_element(By.XPATH, XPathsBazos.select_category))
+            _dict[option] = []
+            for idx, category in enumerate(select_category.options):
+                if idx == 0:
+                    continue
+                _dict[option].append(category.text)
+
+        print(_dict)
+
+    def check_user_files_available(self) -> None:
+        if (not os.path.isfile(f"{settings.COOKIES_FILE}_{self.bazos_country.value}.pkl")
+            or not os.path.isfile(f"{settings.LOCAL_STORAGE_FILE}_{self.bazos_country.value}.pkl")):
+            self.save_authentication(user=self.user)
+
+    def check_authentication(self) -> None:
+        user_input = self.driver.find_elements(By.XPATH, XPathsBazos.user_inputs)
+        # tel_input = self.driver.find_element(By.XPATH, XPathsBazos.auth_phone_input)
+        if len(user_input) != 3:  # Mean is Authenticated, because there is not "Overit" button
+            self.save_authentication(user=self.user)
+
+    def load_page_with_cookies(self) -> None:
+        self.driver.get(self.url_moje_inzeraty)
+        for cookie_dict in pickle.load(open(f"{settings.COOKIES_FILE}_{self.bazos_country.value}.pkl", 'rb')):
+            self.driver.add_cookie(cookie_dict)
+        self.driver.get(self.url_moje_inzeraty)
+
+    def save_authentication(self, user: User) -> None:
         self.driver.get(self.url_moje_inzeraty)
 
         # Prepare authentication
-        telefon_input = self.driver.find_element(By.NAME, 'telefon')
+        telefon_input = self.driver.find_element(By.XPATH, XPathsBazos.auth_phone_input)
         telefon_input.clear()
         telefon_input.send_keys(user.phone_number)
-        click_submit_by_value(submits=self.driver.find_elements(By.NAME, 'Submit'), value='Ověřit')
+        self.driver.find_element(By.XPATH, ).click()  # Submit
 
         # Authenticate
-        code_input = self.driver.find_element(By.NAME, 'klic')
+        code_input = self.driver.find_element(By.XPATH, XPathsBazos.auth_code_input)
         code_input.clear()
         code_input.send_keys(input('Please provide authentification code sended to your phone: '))
-        click_submit_by_value(submits=self.driver.find_elements(By.NAME, 'Submit'), value='Odeslat')
+        self.driver.find_element(By.XPATH, XPathsBazos.auth_code_submit).click()  # Submit
 
         # Save cookies
         pickle.dump(self.driver.get_cookies(),
@@ -61,29 +125,38 @@ class BazosScrapper:
 
     def remove_advertisment(self, user: User):
         self.driver.find_element(By.CLASS_NAME, 'inzeratydetdel').find_element(By.TAG_NAME, 'a').click()
-        self.driver.find_element(By.NAME, 'heslobazar').clear()
-        self.driver.find_element(By.NAME, 'heslobazar').send_keys(user.password)
-        click_submit_by_value(self.driver.find_elements(By.NAME, 'administrace'), 'Vymazat')
+        pwd_input = self.driver.find_element(By.XPATH, XPathsBazos.delete_pwd_input)
+        pwd_input.clear()
+        pwd_input.send_keys(user.password)
+        self.driver.find_element(By.XPATH, XPathsBazos.delete_submit).click()  # Submit-Delete
 
     def remove_advertisements(self, user: User):
-        self.load_page_with_cookies(url=self.url_moje_inzeraty)
-        while len(self.driver.find_elements(By.CLASS_NAME, 'nadpis')) != 0:
-            print(f"Removing[1/{len(self.driver.find_elements(By.CLASS_NAME, 'nadpis'))}]: {self.driver.find_element(By.CLASS_NAME, 'nadpis').text}")
+        self.advertisements = len(self.driver.find_elements(By.CLASS_NAME, 'nadpis'))
+
+        print("==> Removing old advertisements")
+        for i in range(self.advertisements):
+            element = self.driver.find_element(By.CLASS_NAME, 'nadpis')
+            print(f"Removing[{i}/{self.advertisements}]: {element.text}")
+
+            #
             wait_random_time()
-            self.driver.find_element(By.CLASS_NAME, 'nadpis').find_element(By.TAG_NAME, 'a').click()
+            element.find_element(By.TAG_NAME, 'a').click()
             wait_random_time()
             self.remove_advertisment(user=user)
             wait_random_time()
 
-
     def add_advertisement(self, product: Product, user: User):
-        Select(self.driver.find_element(By.NAME, 'rubrikyvybrat')).select_by_visible_text(product.rubric)
-        Select(self.driver.find_element(By.ID, 'category')).select_by_visible_text(product.category)
+        # Rubrik
+        select_rubrik = Select(self.driver.find_element(By.XPATH, XPathsBazos.product_rubric))
+        select_rubrik.select_by_visible_text(get_rubric(self.bazos_country, product.rubric))
 
+        # Product
+        select_category = Select(self.driver.find_element(By.XPATH, XPathsBazos.product_category))
+        select_category.select_by_visible_text(get_category(self.bazos_country, product.rubric, product.category))
         wait_random_time()
         self.driver.find_element(By.ID, 'nadpis').send_keys(product.title)
         self.driver.find_element(By.ID, 'popis').send_keys(product.description)
-        self.driver.find_element(By.ID, 'cena').send_keys(product.price)
+        self.driver.find_element(By.ID, 'cena').send_keys(product.get_location_price(self.bazos_country))
 
         wait_random_time()
         self.driver.find_element(By.ID, 'lokalita').clear()
@@ -97,84 +170,65 @@ class BazosScrapper:
         self.driver.find_element(By.ID, 'heslobazar').clear()
         self.driver.find_element(By.ID, 'heslobazar').send_keys(user.password)
 
-        # TODO: Not working
-        # self.driver.find_element(By.ID, 'uploadbutton').click()
-        # self.driver.find_element(By.ID, 'uploadbutton').send_keys('\n'.join(product.images))
-        # wait_n_seconds(100)
-
         wait_random_time()
         self.driver.find_element(By.CLASS_NAME, 'ovse').click()
-        self.driver.find_element(By.NAME, 'souborp[]').send_keys('\n'.join(product.images))
+        self.driver.find_element(By.XPATH, XPathsBazos.product_img_input).send_keys('\n'.join(product.images))
 
         wait_random_time()
-        click_submit_by_value(submits=self.driver.find_elements(By.NAME, 'Submit'), value='Odeslat')
+        self.driver.find_element(By.XPATH, XPathsBazos.product_submit).click()
 
-    def go_to_rubric(self, product: Product):
-        sections = self.driver.find_elements(By.CLASS_NAME, 'iconstblcell')
-        for icon in sections:
-            a = icon.find_element(By.TAG_NAME, 'a')
-            if a.accessible_name.strip() == product.rubric:
-                a.click()
-                break
-
-    def add_advertisements(self, user: User):
-        def product_already_advertised(product: Product) -> bool:
-            self.load_page_with_cookies(url=self.url_moje_inzeraty)
-            for nadpis in self.driver.find_elements(By.CLASS_NAME, 'nadpis'):
-                if product.title in nadpis.text:
-                    return True
-            return False
-
-        self.load_page_with_cookies(url=self.url_moje_inzeraty)
+    def add_advertisements(self, user: User) -> None:
         products = get_all_products(products_path=user.products_path, country=self.bazos_country)
+        self.advertisements = len(products)
 
         print("==> Adding advertisements")
-        for product in products:
-            if product_already_advertised(product):
-                print(f"Skipping: {product.product_path}")
+        for idx, product in enumerate(products):
+            if self.product_already_advertised(product):
+                print(f"Skipping[{idx}/{self.advertisements}]: {product.product_path}")
                 continue
 
-            print(f"Adding: {product.product_path}")
+            print(f"Adding[{idx}/{self.advertisements}]: {product.product_path}")
 
             # product not advertised ADD them
             wait_random_time()
             self.driver.find_element(By.CLASS_NAME, 'pridati').click()  # go to add page
 
             wait_random_time()
-            self.go_to_rubric(product=product)
+            self.driver.find_elements(By.CLASS_NAME, 'iconstblcell')[0].click()
             self.add_advertisement(product=product, user=user)
 
-    def load_page_with_cookies(self, url: str = ''):
-        self.driver.get(self.url_moje_inzeraty)
-        for cookie_dict in pickle.load(open(f"{settings.COOKIES_FILE}_{self.bazos_country.value}.pkl", 'rb')):
-            self.driver.add_cookie(cookie_dict)
-        self.driver.get(self.url_moje_inzeraty)
+    def product_already_advertised(self, product: Product) -> bool:
+        self.load_page_with_cookies()
+        for nadpis in self.driver.find_elements(By.CLASS_NAME, 'nadpis'):
+            if product.title in nadpis.text:
+                return True
+        return False
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.driver.quit()
 
 
-def bazos(cli_args: vars):
-    for country in list(Country):
-        # TODO: Error that bazos.cz page don't have same values (texts) in buttons as bazos.sk,
-        # so I must to click on button based on id, classes or tags
-        if country == Country.SK:
-            continue
+def bazos(cli_args: vars) -> None:
+    for country in Country:
+        print(f"==> Processing country: {country.value}")
+        if cli_args['print_rubrics']:
+            bazos_scrapper = BazosScrapper(country=country, cli_args=cli_args)
+            bazos_scrapper.check_user_files_available()
+            bazos_scrapper.load_page_with_cookies()
+            bazos_scrapper.check_authentication()
+            bazos_scrapper.print_all_rubrics_and_categories()
+            return
 
-        #
-        user = User(country=country, products_path=cli_args['path'])
-        bazos_scrapper = BazosScrapper(country=country)
-
-        # Prepare Cookies
-        if (not os.path.isfile(f"{settings.COOKIES_FILE}_{country.value}.pkl")
-            or not os.path.isfile(f"{settings.LOCAL_STORAGE_FILE}_{country.value}.pkl")):
-            bazos_scrapper.save_authentication(user=user)
+        bazos_scrapper = BazosScrapper(country=country, cli_args=cli_args)
+        bazos_scrapper.check_user_files_available()
+        bazos_scrapper.load_page_with_cookies()
+        bazos_scrapper.check_authentication()
 
         # Restore advertisements
         if '--add-only' not in sys.argv:
-            bazos_scrapper.remove_advertisements(user=user)
-        bazos_scrapper.add_advertisements(user=user)
+            bazos_scrapper.remove_advertisements(user=bazos_scrapper.user)
+        bazos_scrapper.add_advertisements(user=bazos_scrapper.user)
 
 
 if __name__ == '__main__':
-    bazos()
+    bazos({})

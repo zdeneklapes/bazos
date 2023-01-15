@@ -1,8 +1,8 @@
 import sys
 from os import path
 
-from scrapper.bazos.country import Country
-from scrapper.shared.utils import parse_yaml
+from scrapper.common.country import Country
+from scrapper.common.utils import parse_yaml
 
 
 # TODO: @dataclass maybe

@@ -4,7 +4,7 @@ from os import path
 from colorama import Fore
 from forex_python.converter import CurrencyRates
 
-from scrapper.bazos.country import Country
+from scrapper.common.country import Country
 
 product_info = {
     'rubric': '>>RUBRIC',
@@ -36,6 +36,13 @@ class Product:
         return [filename for filename in images if
                 filename.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif'))]
 
+    def get_location_price(self, country: Country) -> str:
+        if country == Country.CZ:
+            return self.price
+        elif country == Country.SK:
+            price = str(int(int(self.price) / (CurrencyRates().get_rate('EUR', 'CZK') - 2)))
+            return price
+
     def get_current_section(self, line) -> str:
         for key, value in product_info.items():
             if value in line:
@@ -61,10 +68,7 @@ class Product:
                 elif product_info[current_product_info_key] == product_info['title']:
                     self.title = line.strip()
                 elif product_info[current_product_info_key] == product_info['price']:
-                    if self.country == Country.CZ:
-                        self.price = line.strip()
-                    else:
-                        self.price = int(int(line.strip()) / (CurrencyRates().get_rate('CZK', 'EUR') - 2))
+                    self.price = line.strip()
                 # NOTE: Only here we appending line, must be at the end of info.txt
                 elif product_info[current_product_info_key] == product_info['description']:
                     self.description += line

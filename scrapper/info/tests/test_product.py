@@ -1,6 +1,6 @@
 from os import path
 
-from scrapper.bazos.country import Country
+from scrapper.common.country import Country
 from ..product import Product
 
 FILE_DIR = path.dirname(__file__)

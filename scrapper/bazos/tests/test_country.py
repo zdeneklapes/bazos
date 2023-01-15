@@ -1,6 +1,6 @@
 from os import path
 
-from ..country import Country
+from scrapper.common.country import Country
 
 FILE_DIR = path.dirname(__file__)
 
