@@ -40,7 +40,7 @@ class Product:
         if country == Country.CZ:
             return self.price
         elif country == Country.SK:
-            price = str(int(int(self.price) / (CurrencyRates().get_rate('EUR', 'CZK') - 2)))
+            price = str(int(int(self.price) / (CurrencyRates().get_rate('EUR', 'CZK') - 1)))
             return price
 
     def get_current_section(self, line) -> str:
