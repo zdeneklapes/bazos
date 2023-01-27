@@ -66,7 +66,7 @@ class Product:
                 elif product_info[current_product_info_key] == product_info['category']:
                     self.category = line.strip()
                 elif product_info[current_product_info_key] == product_info['title']:
-                    self.title = line.strip()
+                    self.title = line[:60].strip()  # Bazos doesn't support longer title than 60 chars
                 elif product_info[current_product_info_key] == product_info['price']:
                     self.price = line.strip()
                 # NOTE: Only here we appending line, must be at the end of info.txt

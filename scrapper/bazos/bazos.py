@@ -40,7 +40,7 @@ class XPathsBazos:
     delete_submit = "//div[@class='maincontent']/div[2]/form/input[4]"
 
     auth_phone_input = "//div[@class='maincontent']/form/input[2]"
-    auth_phone_submit = "//div[@class='maincontent']/form/input[4]"
+    auth_phone_check_submit = "//div[@class='maincontent']/form/input[4]"
     auth_code_input = "//div[@class='maincontent']/div[1]/form/input[1]"
     auth_code_submit = "//div[@class='maincontent']/div[1]/form/input[3]"
 
@@ -108,7 +108,7 @@ class BazosScrapper:
         telefon_input = self.driver.find_element(By.XPATH, XPathsBazos.auth_phone_input)
         telefon_input.clear()
         telefon_input.send_keys(user.phone_number)
-        self.driver.find_element(By.XPATH, ).click()  # Submit
+        self.driver.find_element(By.XPATH, XPathsBazos.auth_phone_check_submit).click()  # Submit
 
         # Authenticate
         code_input = self.driver.find_element(By.XPATH, XPathsBazos.auth_code_input)
