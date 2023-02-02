@@ -69,20 +69,21 @@ class Product:
                     self.title = line[:60].strip()  # Bazos doesn't support longer title than 60 chars
                 elif product_info[current_product_info_key] == product_info['price']:
                     self.price = line.strip()
-                # NOTE: Only here we appending line, must be at the end of info.txt
+                # NOTE: Only here we append line, must be at the end of info.txt
                 elif product_info[current_product_info_key] == product_info['description']:
                     self.description += line
 
 
 def get_all_products(products_path: str, country: Country) -> [Product]:
     print("==> Loading products")
-    products = []
-    for dir in os.listdir(path=products_path):
-        product_path = path.join(products_path, dir)
-        if path.isdir(product_path):
-            products.append(Product(product_path=product_path, country=country))
-        else:
-            print(f"{Fore.RED}WARNING: Skipping not folder '{dir}'{Fore.RESET}")
+
+    # Filter out all files and hidden directories
+    dirs = [d for d in os.listdir(path=products_path)
+            if path.isdir(path.join(products_path, d)) and d.startswith('.') is False]
+
+    # Get ready all products
+    products = [Product(product_path=path.join(products_path, d), country=country) for d in dirs]
+
     print(f"Product loaded: {len(products)}")
     return products
 
