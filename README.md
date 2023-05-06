@@ -44,10 +44,10 @@ PC
 Notebooky
 
 >>TITLE
-Iphone X 64GB
+Macbook Pro 2019 16"
 
 >>PRICE
-1000
+25000
 
 >>DESCRIPTION
 Your sentences1.
