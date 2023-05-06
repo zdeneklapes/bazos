@@ -1,12 +1,6 @@
 # BAZOS-API
 
-## Authors:
-
-- Zdeněk Lapeš <lapes.zdenek@gmail.com>
-
-## Description:
-
-Current stuff in this repository is just used to remove and add new items to bazos.cz and .sk
+Current functionality supports removing and adding items to bazos.cz and .sk
 
 ## Installation:
 
@@ -44,10 +38,10 @@ PC
 Notebooky
 
 >>TITLE
-Iphone X 64GB
+Macbook Pro 2019 16
 
 >>PRICE
-1000
+25000
 
 >>DESCRIPTION
 Your sentences1.
