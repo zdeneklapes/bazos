@@ -44,7 +44,7 @@ PC
 Notebooky
 
 >>TITLE
-Macbook Pro 2019 16"
+Macbook Pro 2019 16
 
 >>PRICE
 25000
