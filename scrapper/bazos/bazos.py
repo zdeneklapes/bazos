@@ -15,7 +15,6 @@ from core import settings
 from scrapper.info.product import Product, get_all_products
 from scrapper.info.user import User
 from scrapper.common.utils import wait_random_time
-from scrapper.common.country import Country
 
 from scrapper.info.rubric_category import get_rubric, get_category
 
@@ -51,14 +50,14 @@ class XPathsBazos:
 
 
 class BazosScrapper:
-    def __init__(self, country: Country, cli_args: dict):
+    def __init__(self, country: str, cli_args: dict):
         self.user = User(country=country, products_path=cli_args['path'])
         self.bazos_country = country
         self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
         self.advertisements: int
 
         # URLs
-        self.url_bazos = f"https://bazos.{country.value}"
+        self.url_bazos = f"https://bazos.{country}"
         self.url_moje_inzeraty = path.join(self.url_bazos, 'moje-inzeraty.php')
 
     def print_all_rubrics_and_categories(self):
@@ -85,8 +84,8 @@ class BazosScrapper:
         print(_dict)
 
     def check_user_files_available(self) -> None:
-        if (not os.path.isfile(f"{settings.COOKIES_FILE}_{self.bazos_country.value}.pkl")
-            or not os.path.isfile(f"{settings.LOCAL_STORAGE_FILE}_{self.bazos_country.value}.pkl")):
+        if (not os.path.isfile(f"{settings.COOKIES_FILE}_{self.bazos_country}.pkl")
+            or not os.path.isfile(f"{settings.LOCAL_STORAGE_FILE}_{self.bazos_country}.pkl")):
             self.save_authentication(user=self.user)
 
     def check_authentication(self) -> None:
@@ -97,7 +96,7 @@ class BazosScrapper:
 
     def load_page_with_cookies(self) -> None:
         self.driver.get(self.url_moje_inzeraty)
-        for cookie_dict in pickle.load(open(f"{settings.COOKIES_FILE}_{self.bazos_country.value}.pkl", 'rb')):
+        for cookie_dict in pickle.load(open(f"{settings.COOKIES_FILE}_{self.bazos_country}.pkl", 'rb')):
             self.driver.add_cookie(cookie_dict)
         self.driver.get(self.url_moje_inzeraty)
 
@@ -118,10 +117,10 @@ class BazosScrapper:
 
         # Save cookies
         pickle.dump(self.driver.get_cookies(),
-                    file=open(f"{settings.COOKIES_FILE}_{self.bazos_country.value}.pkl", "wb"))
+                    file=open(f"{settings.COOKIES_FILE}_{self.bazos_country}.pkl", "wb"))
         # Save Local Storage
         pickle.dump(self.driver.execute_script("return window.localStorage;"),
-                    file=open(f"{settings.LOCAL_STORAGE_FILE}_{self.bazos_country.value}.pkl", "wb"))
+                    file=open(f"{settings.LOCAL_STORAGE_FILE}_{self.bazos_country}.pkl", "wb"))
 
     def remove_advertisment(self, user: User):
         self.driver.find_element(By.CLASS_NAME, 'inzeratydetdel').find_element(By.TAG_NAME, 'a').click()
@@ -183,6 +182,7 @@ class BazosScrapper:
 
         print("==> Adding advertisements")
         for idx, product in enumerate(products):
+
             if self.product_already_advertised(product):
                 print(f"Skipping[{idx}/{self.advertisements}]: {product.product_path}")
                 continue
@@ -209,8 +209,8 @@ class BazosScrapper:
 
 
 def bazos(cli_args: vars) -> None:
-    for country in Country:
-        print(f"==> Processing country: {country.value}")
+    for country in cli_args['country']:
+        print(f"==> Processing country: {country}")
         if cli_args['print_rubrics']:
             bazos_scrapper = BazosScrapper(country=country, cli_args=cli_args)
             bazos_scrapper.check_user_files_available()
@@ -225,8 +225,7 @@ def bazos(cli_args: vars) -> None:
         bazos_scrapper.check_authentication()
 
         # Restore advertisements
-        if '--add-only' not in sys.argv:
-            bazos_scrapper.remove_advertisements(user=bazos_scrapper.user)
+        if '--add-only' not in sys.argv: bazos_scrapper.remove_advertisements(user=bazos_scrapper.user)
         bazos_scrapper.add_advertisements(user=bazos_scrapper.user)
 
 

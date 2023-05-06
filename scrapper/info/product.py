@@ -4,8 +4,6 @@ from os import path
 from colorama import Fore
 from forex_python.converter import CurrencyRates
 
-from scrapper.common.country import Country
-
 product_info = {
     'rubric': '>>RUBRIC',
     'category': '>>CATEGORY',
@@ -16,7 +14,7 @@ product_info = {
 
 
 class Product:
-    def __init__(self, product_path: str, country: Country):
+    def __init__(self, product_path: str, country: str):
         self.country = country
         self.product_path = product_path
 
@@ -36,10 +34,10 @@ class Product:
         return [filename for filename in images if
                 filename.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif'))]
 
-    def get_location_price(self, country: Country) -> str:
-        if country == Country.CZ:
+    def get_location_price(self, country: str) -> str:
+        if country.lower() == "cz":
             return self.price
-        elif country == Country.SK:
+        elif country.lower() == "sk":
             price = str(int(int(self.price) / (CurrencyRates().get_rate('EUR', 'CZK') - 1)))
             return price
 
@@ -74,7 +72,7 @@ class Product:
                     self.description += line
 
 
-def get_all_products(products_path: str, country: Country) -> [Product]:
+def get_all_products(products_path: str, country: str) -> [Product]:
     print("==> Loading products")
 
     # Filter out all files and hidden directories

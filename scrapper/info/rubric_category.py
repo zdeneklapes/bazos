@@ -1,19 +1,17 @@
-from scrapper.common.country import Country
 
-
-def get_rubric(country: Country, rubric: str):
-    if country == Country.CZ:
+def get_rubric(country: str, rubric: str):
+    if country.lower() == "cz":
         return rubric
-    elif country == Country.SK:
+    elif country.lower() == "sk":
         cz_idx = list(RUBRICS_CZ.keys()).index(rubric)
         sk_rubric = list(RUBRICS_SK.keys())[cz_idx]
         return sk_rubric
 
 
-def get_category(country: Country, rubric: str, category: str):
-    if country == Country.CZ:
+def get_category(country: str, rubric: str, category: str):
+    if country.lower() == "cz":
         return category
-    elif country == Country.SK:
+    elif country.lower() == "sk":
         cz_idx = RUBRICS_CZ[rubric].index(category)
         sk_category = RUBRICS_SK[get_rubric(country, rubric)][cz_idx]
         return sk_category
@@ -67,7 +65,7 @@ RUBRICS_CZ = {
                  'Rukavice a Šály', 'Šaty, Kostýmky', 'Šortky', 'Šperky', 'Spodní prádlo', 'Sportovní oblečení',
                  'Sukně', 'Svatební šaty', 'Těhotenské oblečení', 'Svetry', 'Termo prádlo', 'Trička, tílka', 'Ostatní'],
     'PC': ['Chladiče', 'DVD, Blu-ray mechaniky', 'GPS navigace', 'Grafické karty', 'Hard disky, SSD', 'Herní konzole',
-           'Herní zařízení', 'Hry', 'Klávesnice, myši', 'Kopírovací stroje', 'LCD monitory', 'Modemy', 'MP3 přehrávače',
+           'Herní zařízení', 'Hry', 'Klávesnice, myši', 'Kopírovací stroje', 'LCD monitory', 'Modemy', 'Myši',
            'Notebooky', 'Paměti', 'PC, Počítače', 'Procesory', 'Scanery', 'Síťové prvky', 'Skříně, zdroje', 'Software',
            'Spotřební materiál', 'Tablety, E-čtečky', 'Tiskárny', 'Wireless, WiFi', 'Základní desky', 'Záložní zdroje',
            'Zvukové karty', 'Ostatní'],
@@ -150,7 +148,7 @@ RUBRICS_SK = {
                   'Topánky, obuv', 'Tričká, roláky, tielka', 'Ostatné'],
     'PC': ['Chladiče', 'DVD, Blu-ray mechaniky', 'FDD, ZIPy', 'GPS navigácia', 'Grafické karty', 'Hard disky, SSD',
            'Herné konzoly', 'Herné zariadenia', 'Hry', 'Klávesnice', 'Kopírovacie stroje', 'LCD monitory', 'Modemy',
-           'MP3 prehrávače', 'Notebooky', 'Pamäte', 'PC, Počítače', 'Procesory', 'Scanery', 'Sieťové komponenty',
+           'Myši', 'Notebooky', 'Pamäte', 'PC, Počítače', 'Procesory', 'Scanery', 'Sieťové komponenty',
            'Skrine, zdroje', 'Software', 'Spotrebný materiál', 'Tablety, E-čítačky', 'Tlačiarne', 'Wireless, WiFi',
            'Základné dosky', 'Záložné zdroje', 'Zvukové karty', 'Ostatné'],
     'Práca': ['Administratíva', 'Brigády', 'Chémia a potravinárstvo', 'Doprava a logistika', 'Financie a ekonomika',

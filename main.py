@@ -7,9 +7,10 @@ from scrapper.bazos import bazos as bz
 
 def parse_cli_argument() -> Dict[str, Any]:
     parser = argparse.ArgumentParser()
-    parser.add_argument('-b', '--bazos', action='store_true', dest='bazos', required=False)
-    parser.add_argument('--add-only', action='store_true', dest='add_only', required=False)
-    parser.add_argument('--print-rubrics', action='store_true', dest='print_rubrics', required=False)
+    parser.add_argument('-b', '--bazos', action='store_true')
+    parser.add_argument('--add-only', action='store_true')
+    parser.add_argument('--print-rubrics', action='store_true')
+    parser.add_argument('--country', nargs="+")
     parser.add_argument('-p', '--path', dest='path', required=False, default='/Users/zlapik/Documents/photos-archive/bazos')
     cli_args = vars(parser.parse_args())
     return cli_args

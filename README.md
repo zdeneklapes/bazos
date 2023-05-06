@@ -1,4 +1,4 @@
-# BAZOS-SCRAPPER
+# BAZOS-API
 
 ## Authors:
 
