@@ -1,8 +1,11 @@
 import os
 from os import path
+from collections import defaultdict
 
 from colorama import Fore
-from forex_python.converter import CurrencyRates
+# from forex_python.converter import CurrencyRates, RatesNotAvailableError # Broken
+from currency_converter import CurrencyConverter
+from tqdm import tqdm
 
 product_info = {
     'rubric': '>>RUBRIC',
@@ -13,9 +16,27 @@ product_info = {
 }
 
 
+class CurrencyRates:
+    def __init__(self):
+        self.rates_default = {
+            'CZKEUR': 0.04,
+            'EURCZK': 25.5,
+            'EURUSD': 1.2,
+            'EURGBP': 0.9,
+
+        }
+
+    def get_rate(self, rate: str = "EURCZK") -> float:
+        cc = CurrencyConverter()
+        if len(rate) != 6: raise ValueError(f"Rate {rate} is not correct. Should be 6 characters long.")
+        try:
+            return cc.convert(1, rate[:3], rate[3:])
+        except Exception:
+            return self.rates_default[rate]
+
+
 class Product:
-    def __init__(self, product_path: str, country: str):
-        self.country = country
+    def __init__(self, product_path: str):
         self.product_path = product_path
 
         self.rubric = ''
@@ -27,6 +48,7 @@ class Product:
 
         #
         self.load_product_info(product_dir=product_path)
+        self.currency_rates = CurrencyRates()
 
     def get_images(self):
         images = sorted(map(lambda x: path.join(self.product_path, 'photos', x),
@@ -35,11 +57,10 @@ class Product:
                 filename.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif'))]
 
     def get_location_price(self, country: str) -> str:
-        if country.lower() == "cz":
+        if country == 'sk':
+            return str(int(int(self.price) / self.currency_rates.get_rate("EURCZK") - 1))
+        elif country == 'cz':
             return self.price
-        elif country.lower() == "sk":
-            price = str(int(int(self.price) / (CurrencyRates().get_rate('EUR', 'CZK') - 1)))
-            return price
 
     def get_current_section(self, line) -> str:
         for key, value in product_info.items():
@@ -80,7 +101,7 @@ def get_all_products(products_path: str, country: str) -> [Product]:
             if path.isdir(path.join(products_path, d)) and d.startswith('.') is False]
 
     # Get ready all products
-    products = [Product(product_path=path.join(products_path, d), country=country) for d in dirs]
+    products = [Product(product_path=path.join(products_path, d)) for d in dirs]
 
     print(f"Product loaded: {len(products)}")
     return products
