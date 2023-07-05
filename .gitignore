@@ -5,10 +5,12 @@
 others/
 scrapper/.env
 
-venv/
+.venv/
 
 # ide
 .idea/
+
+tags
 
 
 # cache
