@@ -5,6 +5,7 @@
 others/
 scrapper/.env
 
+venv/
 .venv/
 
 # ide
