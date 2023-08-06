@@ -1,6 +1,6 @@
 from os import path
 
-from scrapper.common.country import Country
+from bazos.shared.country import Country
 
 FILE_DIR = path.dirname(__file__)
 

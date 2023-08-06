@@ -2,7 +2,7 @@ import argparse
 import sys
 from typing import Dict, Any
 
-from scrapper.bazos import bazos as bz
+from bazos.bazos import bazos as bz
 
 
 def parse_cli_argument() -> Dict[str, Any]:

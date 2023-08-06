@@ -9,20 +9,20 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import Select
-from webdriver_manager.chrome import ChromeDriverManager
 
 from core import settings
-from scrapper.info.product import Product, get_all_products
-from scrapper.info.user import User
-from scrapper.common.utils import wait_random_time
+from bazos.info.product import Product, get_all_products
+from bazos.info.user import User
+from bazos.shared.utils import wait_random_time
 
-from scrapper.info.rubric_category import get_rubric, get_category
+from bazos.info.rubric_category import get_rubric, get_category
+
 
 load_dotenv()
 
 
 ################################################################################
-# BUG: Some images are rotated
+# BUG: Some images are rotated, when you upload them to bazos
 
 
 def click_submit_by_value(submits: [WebElement], value: str):
@@ -53,12 +53,18 @@ class BazosScrapper:
     def __init__(self, country: str, cli_args: dict):
         self.user = User(country=country, products_path=cli_args['path'])
         self.bazos_country = country
-        self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+        service = Service()
+        options = webdriver.ChromeOptions()
+        self.driver = webdriver.Chrome(service=service, options=options)
+
         self.advertisements: int
 
         # URLs
         self.url_bazos = f"https://bazos.{country}"
         self.url_moje_inzeraty = path.join(self.url_bazos, 'moje-inzeraty.php')
+
+    def __del__(self):
+        self.driver.quit()
 
     def print_all_rubrics_and_categories(self):
         self.driver.find_element(By.CLASS_NAME, 'pridati').click()  # go to add page

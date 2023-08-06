@@ -1,7 +1,7 @@
 import sys
 from os import path
 
-from scrapper.common.utils import parse_yaml
+from bazos.shared.utils import parse_yaml
 
 
 # TODO: @dataclass maybe

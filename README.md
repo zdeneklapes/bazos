@@ -26,7 +26,7 @@ $HOME/Documents/photos-archive/folder1/photos/photo1.jpg
 $HOME/Documents/photos-archive/folder1/info.txt
 ```
 
-### `info.txt` file
+### `info.txt` file structure
 
 Must follow this format:
 
@@ -47,10 +47,3 @@ Macbook Pro 2019 16
 Your sentences1.
 Your sentences2.
 ```
-
-## TODO:
-
-- make API class, that user can connect to bazos, get all their items, and then add new items, remove old items,
-  update items, etc...
-- Then create some example scripts, that show how to use this API class
-- change "our own" file structure that describes items to yaml syntax
