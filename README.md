@@ -1,20 +1,14 @@
 # BAZOS-API
 
-Current functionality supports removing and adding items to bazos.cz and .sk
+Current functionality supports removing and adding items to bazos.cz, bazos.sk, bazos.at and bazos.pl.
+
+## Goal
+Create full-featured API for bazos.cz, bazos.sk, bazos.at and bazos.pl.
 
 ## Installation
 
 ```shell
 pip3 install bazos
-```
-
-## Development:
-
-```shell
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-pip install -e .
 ```
 
 ## Run
@@ -55,4 +49,27 @@ Macbook Pro 2019 16
 >>DESCRIPTION
 Your sentences1.
 Your sentences2.
+```
+
+## Contribution and Development
+
+Every contribution is welcome!
+
+Please follow rules inside `.pre-commit-config.yml` file.
+
+Before creating pull request, please run `pre-commit run --all-files` to check if there are no errors.
+
+### Install pre-commit hooks
+
+```shell
+pre-commit install
+```
+
+### Create virtual environment and install dependencies
+
+```shell
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+pip install -e .
 ```
