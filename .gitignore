@@ -9,6 +9,7 @@ logs/
 .cache/
 __pycache__/
 *.pytest_cache/
+dist/
 
 # Virtualenv
 venv/
