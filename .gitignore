@@ -1,33 +1,28 @@
-# macOS
-.DS_Store
-
-# dirs
-others/
-scrapper/.env
-
-venv/
-.venv/
-
-# ide
+# IDe
 .idea/
 
-tags
+others/
+logs/
 
-
-# cache
+# Caches
 .cache/
 __pycache__/
 *.pytest_cache/
-*.cache
 
-# logs
-logs/
+# Virtualenv
+venv/
+.venv/
 
-# project setup.py
+# Python
 *.egg-info/
+*.cache
+*.pkl
 
 # env
 *.env
 
-# cookies
-*.pkl
+# Ctags
+tags
+
+# Macos
+.DS_Store
