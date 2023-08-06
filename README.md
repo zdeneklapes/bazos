@@ -1,19 +1,22 @@
 # BAZOS-API
 
-Current functionality supports removing and adding items to bazos.cz and .sk
+Current functionality supports removing and adding items to bazos.cz, bazos.sk, bazos.at and bazos.pl.
 
-## Installation:
+## Goal
+Create full-featured API for bazos.cz, bazos.sk, bazos.at and bazos.pl.
+
+## Installation
 
 ```shell
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+pip3 install bazos
 ```
 
+## Run
+
 ```shell
-python3 main.py --help
-python3 main.py -b --country cz sk --path $HOME/Documents/photos-archive # Remove all items from bazos.cz and bazos.sk and add new items from $HOME/Documents/photos-archive
-python3 main.py -b --country cz sk --add-only --path $HOME/Documents/photos-archive # Add new items from $HOME/Documents/photos-archive
+bazos --help
+bazos -b --country cz sk --path $HOME/Documents/photos-archive # Remove all items from bazos.cz and bazos.sk and add new items from $HOME/Documents/photos-archive
+bazos -b --country cz sk --add-only --path $HOME/Documents/photos-archive # Add new items from $HOME/Documents/photos-archive
 ```
 
 ### `--path` argument
@@ -26,7 +29,7 @@ $HOME/Documents/photos-archive/folder1/photos/photo1.jpg
 $HOME/Documents/photos-archive/folder1/info.txt
 ```
 
-### `info.txt` file
+### `info.txt` file structure
 
 Must follow this format:
 
@@ -48,9 +51,25 @@ Your sentences1.
 Your sentences2.
 ```
 
-## TODO:
+## Contribution and Development
 
-- make API class, that user can connect to bazos, get all their items, and then add new items, remove old items,
-  update items, etc...
-- Then create some example scripts, that show how to use this API class
-- change "our own" file structure that describes items to yaml syntax
+Every contribution is welcome!
+
+Please follow rules inside `.pre-commit-config.yml` file.
+
+Before creating pull request, please run `pre-commit run --all-files` to check if there are no errors.
+
+### Install pre-commit hooks
+
+```shell
+pre-commit install
+```
+
+### Create virtual environment and install dependencies
+
+```shell
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+pip install -e .
+```
