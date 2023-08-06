@@ -11,7 +11,8 @@ class User:
         if len(sys.argv) > 2 and path.isdir(sys.argv[1]):
             products_path = sys.argv[1]
 
-        user_info = parse_yaml(filename=path.join(products_path, f"user_{country}.yml"))
+        user_info = parse_yaml(filename=path.join(
+            products_path, f"user_{country}.yml"))
 
         self.name = user_info['name']
         self.phone_number = user_info['phone_number']
