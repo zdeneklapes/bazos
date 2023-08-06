@@ -1,4 +1,3 @@
-
 def get_rubric(country: str, rubric: str):
     if country.lower() == "cz":
         return rubric

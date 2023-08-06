@@ -7,14 +7,15 @@ with open(os.path.join(directory, 'README.md'), encoding='utf-8') as f:
 
 
 setup(
-    name='cash_balance',
-    version='0.0.2',
-    description='Cash balance',
+    name='bazos',
+    version='0.0.1',
+    description='Bazos API, that allows you to scrape bazos and upload products to bazos website.',
     author='Zdenek Lapes',
     license='MIT',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    packages = find_packages(),
+    packages=find_packages(),
+    entry_points={'console_scripts': ['bazos=bazos:main']},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

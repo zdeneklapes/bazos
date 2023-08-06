@@ -1,11 +1,6 @@
 import os
 from os import path
-from collections import defaultdict
-
-from colorama import Fore
-# from forex_python.converter import CurrencyRates, RatesNotAvailableError # Broken
 from currency_converter import CurrencyConverter
-from tqdm import tqdm
 
 product_info = {
     'rubric': '>>RUBRIC',

@@ -10,11 +10,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import Select
 
-from core import settings
+from bazos.core import settings
 from bazos.info.product import Product, get_all_products
 from bazos.info.user import User
 from bazos.shared.utils import wait_random_time
-
 from bazos.info.rubric_category import get_rubric, get_category
 
 
