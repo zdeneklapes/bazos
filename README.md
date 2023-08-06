@@ -19,19 +19,44 @@ bazos -b --country cz sk --path $HOME/Documents/photos-archive # Remove all item
 bazos -b --country cz sk --add-only --path $HOME/Documents/photos-archive # Add new items from $HOME/Documents/photos-archive
 ```
 
+### `--country` argument
+Supported countries: `cz`, `sk`, `at`, `pl`
+
+
+### `-b|--bazos` argument
+This turn on run.
+
 ### `--path` argument
+The folder where all photos and `user_{country}.yml` file.
 
-The folder structure of directory passed to `--path` argument should look like this:
+How to structure folder defined in `--path` argument:
 
-```shell
-$HOME/Documents/photos-archive
-$HOME/Documents/photos-archive/folder1/photos/photo1.jpg
-$HOME/Documents/photos-archive/folder1/info.txt
+```yml
+# user_${bazos_country}.yml e.g.: user_cz.yml
+name: Jmeno
+phone_number: '+420123456789'
+email: user@example.com
+psc: 60200
+password: 123456
 ```
 
-### `info.txt` file structure
 
-Must follow this format:
+### Example of folder structure
+
+```shell
+bazos-ads/
+bazos-ads/user_cz.yml
+bazos-ads/user_sk.yml
+bazos-ads/item1/photos/photo1.jpg
+bazos-ads/item1/photos/photo2.jpg
+bazos-ads/item1/info.txt
+bazos-ads/item2/photos/photo1.jpg
+bazos-ads/item2/photos/photo2.jpg
+bazos-ads/item2/info.txt
+...
+```
+
+### `info.txt` syntax
 
 ```shell
 >>RUBRIC
@@ -50,6 +75,8 @@ Macbook Pro 2019 16
 Your sentences1.
 Your sentences2.
 ```
+
+
 
 ## Contribution and Development
 
