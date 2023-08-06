@@ -1,11 +1,6 @@
 import os
 from os import path
-from collections import defaultdict
-
-from colorama import Fore
-# from forex_python.converter import CurrencyRates, RatesNotAvailableError # Broken
 from currency_converter import CurrencyConverter
-from tqdm import tqdm
 
 product_info = {
     'rubric': '>>RUBRIC',
@@ -28,7 +23,9 @@ class CurrencyRates:
 
     def get_rate(self, rate: str = "EURCZK") -> float:
         cc = CurrencyConverter()
-        if len(rate) != 6: raise ValueError(f"Rate {rate} is not correct. Should be 6 characters long.")
+        if len(rate) != 6:
+            raise ValueError(
+                f"Rate {rate} is not correct. Should be 6 characters long.")
         try:
             return cc.convert(1, rate[:3], rate[3:])
         except Exception:
@@ -67,14 +64,16 @@ class Product:
             if value in line:
                 return key
 
-        raise Exception(f"Key not found: key={key}, value={value}, line={line}")
+        raise Exception(
+            f"Key not found: key={key}, value={value}, line={line}")
 
     def load_product_info(self, *, product_dir):
         # NOTE: Rewrite this shit code
         with open(file=path.join(product_dir, 'info.txt'), mode='r') as file:
             for line in file.readlines():
                 if '>>' in line:
-                    current_product_info_key = self.get_current_section(line=line)
+                    current_product_info_key = self.get_current_section(
+                        line=line)
                     continue
 
                 if line.replace(' ', '').replace('\t', '').replace('\n', '') == '':
@@ -85,7 +84,8 @@ class Product:
                 elif product_info[current_product_info_key] == product_info['category']:
                     self.category = line.strip()
                 elif product_info[current_product_info_key] == product_info['title']:
-                    self.title = line[:60].strip()  # Bazos doesn't support longer title than 60 chars
+                    # Bazos doesn't support longer title than 60 chars
+                    self.title = line[:60].strip()
                 elif product_info[current_product_info_key] == product_info['price']:
                     self.price = line.strip()
                 # NOTE: Only here we append line, must be at the end of info.txt
@@ -101,7 +101,8 @@ def get_all_products(products_path: str, country: str) -> [Product]:
             if path.isdir(path.join(products_path, d)) and d.startswith('.') is False]
 
     # Get ready all products
-    products = [Product(product_path=path.join(products_path, d)) for d in dirs]
+    products = [Product(product_path=path.join(products_path, d))
+                for d in dirs]
 
     print(f"Product loaded: {len(products)}")
     return products

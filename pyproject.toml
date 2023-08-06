@@ -1,0 +1,54 @@
+[tool.ruff]
+line-length = 120
+select = ["E", "F"] # Enable Pyflakes `E` and `F` codes by default.
+ignore = ["E402"]
+fixable = ["A", "B", "C", "D", "E", "F"]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".idea",
+    ".vscode",
+    ".pytest_cache",
+    ".cache",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+per-file-ignores = { }
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+target-version = "py310"
+
+[tool.ruff.mccabe]
+max-complexity = 10 # Unlike Flake8, default to a complexity level of 10.
+
+[tool.bandit]
+exclude_dirs = ["tests", "venv", "**conftest.py"]
+targets = ['src']
+
+
+[tool.autopep8]
+max_line_length = 120
+ignore = ["E701"]
+in-place = true
+recursive = true
+aggressive = 3
+
+# Pytest
+[tool.pytest.ini_options]
+python_files = "test*.py"
+testpaths = ["tests", ]
+pythonpath = "bazos"
+filterwarnings = []
