@@ -2,18 +2,27 @@
 
 Current functionality supports removing and adding items to bazos.cz and .sk
 
-## Installation:
+## Installation
+
+```shell
+pip3 install bazos
+```
+
+## Development:
 
 ```shell
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+pip install -e .
 ```
 
+## Run
+
 ```shell
-python3 bazos --help
-python3 bazos -b --country cz sk --path $HOME/Documents/photos-archive # Remove all items from bazos.cz and bazos.sk and add new items from $HOME/Documents/photos-archive
-python3 bazos -b --country cz sk --add-only --path $HOME/Documents/photos-archive # Add new items from $HOME/Documents/photos-archive
+bazos --help
+bazos -b --country cz sk --path $HOME/Documents/photos-archive # Remove all items from bazos.cz and bazos.sk and add new items from $HOME/Documents/photos-archive
+bazos -b --country cz sk --add-only --path $HOME/Documents/photos-archive # Add new items from $HOME/Documents/photos-archive
 ```
 
 ### `--path` argument
