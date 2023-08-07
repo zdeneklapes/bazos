@@ -1,14 +1,19 @@
 import os
 from setuptools import setup, find_packages
+from subprocess import Popen, PIPE
 
 directory = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
+version = Popen(
+    "git describe --tags | cut -d'-' -f1", stdout=PIPE, stderr=PIPE, shell=True
+).stdout.read().decode().strip()
 
 setup(
     name='bazos',
-    version='0.0.1',
+    version=version,
+    use_scm_version=True,
     description='Bazos API, that allows you to scrape bazos and upload products to bazos website.',
     author='Zdenek Lapes',
     license='MIT',
