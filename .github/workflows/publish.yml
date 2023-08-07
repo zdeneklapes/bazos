@@ -18,15 +18,17 @@ jobs:
         uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v4
-      - run: |
+      - name: Install dependencies
+        run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install --upgrade setuptools wheel
-          python3 -m pip install --upgrade build && python3 -m build
+          python3 -m pip install --upgrade build
           python3 -m pip install --upgrade twine
-      - name: Publish package
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
-          verbose: true
-          print-hash: true
-          skip-existing: true
+      # setup.py expects the environment variable VERSION to be set
+      - name: Build and publish
+        run: |
+          export VERSION=$(gh release view --jq '.tagName' --json tagName)
+          echo "VERSION: $VERSION"
+          python3 -m build
+          python3 -m twine check dist/*
+          python3 -m twine upload --repository pypi dist/* --username __token__ --password ${{ secrets.PYPI_API_TOKEN }}
