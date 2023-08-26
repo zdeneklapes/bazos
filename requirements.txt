@@ -1,5 +1,4 @@
 bandit==1.7.5
-bazos==0.0.1
 colorama==0.4.6
 currencyconverter==0.17.9
 forex-python==1.8
