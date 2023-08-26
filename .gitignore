@@ -1,30 +1,18 @@
-# IDe
 .idea/
-
 tokens/
 others/
 logs/
-
-# Caches
 .cache/
 __pycache__/
 *.pytest_cache/
+.ruff_cache/
 dist/
-
-# Virtualenv
 venv/
 .venv/
-
-# Python
 *.egg-info/
+
+.DS_Store
 *.cache
 *.pkl
-
-# env
 *.env
-
-# Ctags
 tags
-
-# Macos
-.DS_Store

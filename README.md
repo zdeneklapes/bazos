@@ -6,6 +6,9 @@ Current functionality supports removing and adding items to bazos.cz, bazos.sk, 
 Create full-featured API for bazos.cz, bazos.sk, bazos.at and bazos.pl.
 
 ## Installation
+### Requirements
+- Python 3.10+
+- chromedriver 116.0.5845.96+
 
 ```shell
 pip3 install bazos
@@ -77,7 +80,6 @@ Your sentences2.
 ```
 
 
-
 ## Contribution and Development
 
 Every contribution is welcome!
@@ -92,11 +94,16 @@ Before creating pull request, please run `pre-commit run --all-files` to check i
 pre-commit install
 ```
 
-### Create virtual environment and install dependencies
+### Create virtual environment + install dependencies
 
 ```shell
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 pip install -e .
+
+# Try run
+python3 bazos --help
 ```
+
+You are good to go!
