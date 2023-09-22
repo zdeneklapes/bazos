@@ -97,8 +97,9 @@ pre-commit install
 ### Create virtual environment + install dependencies
 
 ```shell
-docker build -t zdeneklapes/bazos-api:latest -f Dockerfile .
-docker run -it --rm -v=./tmp/fish/:/root/.local/share/fish/ zdeneklapes/bazos-api:latest
+./main.sh dev_docker_up
+
+# And then you can try:
 python3 bazos --help
 ```
 
