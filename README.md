@@ -97,12 +97,8 @@ pre-commit install
 ### Create virtual environment + install dependencies
 
 ```shell
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-pip install -e .
-
-# Try run
+docker build -t zdeneklapes/bazos-api:latest -f Dockerfile .
+docker run -it --rm -v=./tmp/fish/:/root/.local/share/fish/ zdeneklapes/bazos-api:latest
 python3 bazos --help
 ```
 
