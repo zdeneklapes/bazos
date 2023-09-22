@@ -21,10 +21,11 @@ function docker_show_ipaddress() {
 }
 
 function dev_docker_up() {
-    docker build -t zdeneklapes/bazos-api:latest -f Dockerfile .
+    docker build -t zdeneklapes/bazos-api:latest -f Dockerfile . && \
     docker run -it --rm \
         -v=./tmp/fish/:/root/.local/share/fish/ \
         -v=./bazos/:/app/bazos/ \
         -v=./scripts/:/app/scripts/ \
+        -v=$HOME/Documents/photos-archive/bazos:/app/images/bazos/ \
         zdeneklapes/bazos-api:latest
 }

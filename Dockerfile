@@ -7,7 +7,7 @@ ENV EDITOR vim
 EXPOSE 8000
 
 WORKDIR /app
-COPY requirements.txt main.sh /app/
+COPY . /app/
 RUN set -ex && \
     apt-get update &&  \
     apt-get -y install \
@@ -21,6 +21,8 @@ RUN set -ex && \
     pip install --no-cache-dir -r /app/requirements.txt && \
     rm -rf /var/lib/apt/lists/* && \
     service cron start
+
+RUN pip install -e .
 
 RUN chmod +x /app/main.sh
 CMD ["fish"]
