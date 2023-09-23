@@ -1,0 +1,20 @@
+version: '3.6'
+
+name: bazos-api
+
+services:
+  bazos-api:
+    container_name: ${COMPOSE_PROJECT_NAME}
+    # Here must be defined both image and build, because we use different .env files with which are the images build
+    image: zdeneklapes/${COMPOSE_PROJECT_NAME}:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/app/ # Mount the project directory to the container
+      - $HOME/Documents/photos-archive/bazos:/app/images/bazos/
+    #      - ./tmp/fish/:/root/.local/share/fish/ # Mount the fish shell history, to remain files when docker container is rebuild: This will create ./tmp/fish/ folder in the project directory if it doesn't exist already
+    #      - ./bazos/:/app/bazos/
+    #      - ./scripts/:/app/scripts
+    stdin_open: true
+    tty: true

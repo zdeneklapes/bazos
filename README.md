@@ -99,6 +99,12 @@ pre-commit install
 ```shell
 ./main.sh dev_docker_up
 
+# or locally
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+pip install -e .
+
 # And then you can try:
 python3 bazos --help
 ```
