@@ -1,0 +1,99 @@
+# Use the official Selenium Grid Base image as the base image
+FROM selenium/standalone-chrome:119.0 as base
+#FROM UBUNTU:20.04 as base
+
+# Set the desired Chrome and ChromeDriver versions
+ENV CHROME_VERSION 119.0
+ENV CHROMEDRIVER_VERSION 119.0
+ENV SELENIUM_VERSION 4.9.0
+
+# Install Chrome and ChromeDriver with the specified versions
+#RUN wget -q -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
+#    dpkg -i /tmp/chrome.deb || apt-get -f install -y && \
+#    rm /tmp/chrome.deb
+#RUN wget -q -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip && \
+#    unzip /tmp/chromedriver.zip -d /usr/bin && \
+#    chmod +x /usr/bin/chromedriver && \
+#    rm /tmp/chromedriver.zip
+# Set the desired Chrome and ChromeDriver versions as environment variables
+#ENV CHROME_VERSION 119.0
+#ENV CHROMEDRIVER_VERSION 119.0
+
+FROM base as chromedriver
+
+# Install Chrome
+RUN wget -q -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
+    dpkg -i /tmp/chrome.deb || apt-get -f install -y && \
+    rm /tmp/chrome.deb
+
+# Install ChromeDriver
+RUN wget -q -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip && \
+    unzip /tmp/chromedriver.zip -d /usr/bin && \
+    chmod +x /usr/bin/chromedriver && \
+    rm /tmp/chromedriver.zip
+
+
+#RUN apt-get install -y google-chrome-stable && \
+
+#RUN apt-get update && \
+#    apt-get install -y xvfb gnupg wget curl unzip --no-install-recommends && \
+#    wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+#    echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list && \
+#    apt-get update -y
+#
+#RUN apt-get install -y google-chrome-stable && \
+#    CHROMEVER=$(google-chrome --product-version | grep -o "[^\.]*\.[^\.]*\.[^\.]*") && \
+#    DRIVERVER=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROMEVER")
+#
+#RUN wget -q --continue -P /chromedriver "http://chromedriver.storage.googleapis.com/$DRIVERVER/chromedriver_linux64.zip" && \
+#    unzip /chromedriver/chromedriver* -d /chromedriver
+
+## install google chrome
+#RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+#RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+#RUN apt-get -y update
+#RUN apt-get install -y google-chrome-stable
+#
+## install chromedriver
+#RUN apt-get install -yqq unzip
+#RUN wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip
+#RUN unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
+#
+## set display port to avoid crash
+#ENV DISPLAY=:99
+#
+## install selenium
+#RUN pip install selenium==3.8.0
+
+# Set the Chrome and ChromeDriver versions as environment variables
+#ENV CHROME_DRIVER_VERSION $CHROMEDRIVER_VERSION
+#ENV CHROME_BROWSER_VERSION $CHROME_VERSION
+
+# Expose the default Selenium Grid port
+#EXPOSE 4444
+
+# Start the Selenium Grid server
+#CMD ["start-selenium-grid.sh"]
+
+FROM chromedriver as project
+RUN set -ex && \
+    apt-get update &&  \
+    apt-get -y install \
+      cron \
+      vim \
+      fish \
+      python3-dev \
+      bat \
+    --no-install-recommends && \
+    pip install --upgrade pip && \
+    pip install --no-cache-dir -r /app/requirements.txt && \
+    rm -rf /var/lib/apt/lists/* && \
+    service cron start
+RUN pip install -e .
+
+FROM project
+# set the proxy addresses
+#ENV HTTP_PROXY "http://134.209.29.120:8080"
+#ENV HTTPS_PROXY "https://45.77.71.140:9050"
+
+CMD ["fish"]
