@@ -60,6 +60,13 @@ class BazosScrapper:
         options.add_argument('--headless')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
+
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--disable-extensions')
+        options.add_argument('--disable-gpu')
+        options.add_argument("--log-level=DEBUG")
+        # options.add_argument('--user-agent={}'.format(random.choice(list(self.user_agents))))
+
         webdriver_manager = ChromeDriverManager().install()
         service = Service(executable_path=webdriver_manager)
         options = webdriver.ChromeOptions()
