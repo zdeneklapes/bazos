@@ -9,7 +9,7 @@ services:
     image: zdeneklapes/${COMPOSE_PROJECT_NAME}:latest
     build:
       context: .
-      dockerfile: Dockerfile_selenium2
+      dockerfile: Dockerfile
     volumes:
       - ./:/app/ # Mount the project directory to the container
       - ./tmp/fish/:/root/.local/share/fish/ # Mount the fish shell history, to remain files when docker container is rebuild: This will create ./tmp/fish/ folder in the project directory if it doesn't exist already
@@ -21,3 +21,13 @@ services:
       - 9050:9050
     stdin_open: true
     tty: true
+    depends_on:
+      - selenium-chrome
+  selenium-chrome:
+    image: selenium/standalone-chrome:latest
+    ports:
+      - "4444:4444"
+      - "7900:7900"
+    shm_size: "2g"
+    container_name: selenium-chrome-container
+    restart: unless-stopped
