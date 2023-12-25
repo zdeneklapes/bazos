@@ -97,7 +97,7 @@ pre-commit install
 ### Create virtual environment + install dependencies
 
 ```shell
-./main.sh dev_docker_up
+./make.sh dev_docker_up
 
 # or locally
 python3 -m venv venv

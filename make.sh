@@ -159,6 +159,10 @@ function pack() {
         main.sh
 }
 
+function entrypoint() {
+    /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
+}
+
 function send() {
     # Send zipped project to VPS and then remove the zip file
     scp "${ZIP_NAME}" "${VPS_URI}"

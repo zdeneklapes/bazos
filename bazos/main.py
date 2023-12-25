@@ -17,16 +17,13 @@ from bazos.info.product import Product, get_all_products
 from bazos.info.user import User
 from bazos.shared.utils import wait_random_time
 from bazos.info.rubric_category import get_rubric, get_category
-
+from bazos.shared.utils import parse_yaml
 
 load_dotenv()
-
-# vim test.py
 
 
 ################################################################################
 # BUG: Some images are rotated, when you upload them to bazos
-
 
 def click_submit_by_value(submits: [WebElement], value: str):
     for submit in submits:
@@ -52,24 +49,111 @@ class XPathsBazos:
     product_img_input = "//div[@class='maincontent']/form/div[1]/input[3]"
 
 
-class BazosScrapper:
+class BazosDriver:
     def __init__(self, country: str, cli_args: dict):
+        self.country = country
+        self.cli_args = cli_args
+        self.url_bazos = f"https://bazos.{country}"
+        self.url_moje_inzeraty = path.join(self.url_bazos, 'moje-inzeraty.php')
+        self.driver = self.get_driver()
 
-        options = Options()
+    def set_chrome_options(self) -> Options:
+        """Sets chrome options for Selenium.
+            Chrome options for headless browser is enabled.
+            """
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_prefs = {}
+        chrome_options.experimental_options["prefs"] = chrome_prefs
+        chrome_prefs["profile.default_content_settings"] = {"images": 2}
         # options.binary_location = '/usr/bin/google-chrome'
-        options.add_argument('--headless')
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-dev-shm-usage')
-
-        options.add_argument('--ignore-certificate-errors')
-        options.add_argument('--disable-extensions')
-        options.add_argument('--disable-gpu')
-        options.add_argument("--log-level=DEBUG")
+        # options.add_argument('--headless')
+        # options.add_argument('--no-sandbox')
+        # options.add_argument('--disable-dev-shm-usage')
+        #
+        # options.add_argument('--ignore-certificate-errors')
+        # options.add_argument('--disable-extensions')
+        # options.add_argument('--disable-gpu')
+        # options.add_argument("--log-level=DEBUG")
         # options.add_argument('--user-agent={}'.format(random.choice(list(self.user_agents))))
+        return chrome_options
 
+    def get_driver(self):
+        options = self.set_chrome_options()
         webdriver_manager = ChromeDriverManager().install()
         service = Service(executable_path=webdriver_manager)
-        options = webdriver.ChromeOptions()
+        driver = webdriver.Chrome(service=service, options=options)
+        return driver
+
+    def __del__(self):
+        self.driver.close()
+
+
+class BazosUser:
+    def __init__(self, country: str, products_path: str):
+        self.country = country
+        if len(sys.argv) > 2 and path.isdir(sys.argv[1]):
+            products_path = sys.argv[1]
+
+        user_info = parse_yaml(filename=path.join(
+            products_path, f"user_{country}.yml"))
+
+        self.name = user_info['name']
+        self.phone_number = user_info['phone_number']
+        self.email = user_info['email']
+        self.password = user_info['password']
+        self.psc = user_info['psc']
+        self.products_path = products_path
+
+    def check_user_files_available(self) -> None:
+        if (not os.path.isfile(f"{settings.COOKIES_FILE}_{self.bazos_country}.pkl")  # nosec
+                or not os.path.isfile(f"{settings.LOCAL_STORAGE_FILE}_{self.bazos_country}.pkl")):  # nosec
+            print("==> User files not found, please login - login flag: --login")
+            # self.save_authentication(user=self.user)
+
+    def check_authentication(self) -> None:
+        user_input = self.driver.find_elements(
+            By.XPATH, XPathsBazos.user_inputs)
+        # tel_input = self.driver.find_element(By.XPATH, XPathsBazos.auth_phone_input)
+        if len(user_input) != 3:  # Mean is Authenticated, because there is not "Overit" button
+            self.save_authentication(user=self.user)
+
+    def save_authentication(self) -> None:
+        self.driver.get(self.url_moje_inzeraty)
+
+        # Prepare authentication
+        telefon_input = self.driver.find_element(
+            By.XPATH, XPathsBazos.auth_phone_input)
+        telefon_input.clear()
+        telefon_input.send_keys(self.user.phone_number)
+        self.driver.find_element(
+            By.XPATH, XPathsBazos.auth_phone_check_submit).click()  # Submit
+
+        # Authenticate
+        code_input = self.driver.find_element(
+            By.XPATH, XPathsBazos.auth_code_input)
+        code_input.clear()
+        code_input.send_keys(
+            input('Please provide authentification code sended to your phone: '))
+        self.driver.find_element(
+            By.XPATH, XPathsBazos.auth_code_submit).click()  # Submit
+
+        # Save cookies
+        pickle.dump(self.driver.get_cookies(),
+                    file=open(f"{settings.COOKIES_FILE}_{self.bazos_country}.pkl", "wb"))  # nosec
+        # Save Local Storage
+        pickle.dump(self.driver.execute_script("return window.localStorage;"),
+                    file=open(f"{settings.LOCAL_STORAGE_FILE}_{self.bazos_country}.pkl", "wb"))  # nosec
+
+
+class BazosScrapper(BazosDriver):
+    def __init__(self, country: str, cli_args: dict):
+        super().__init__(country, cli_args)
+        options = self.set_chrome_options()
+        webdriver_manager = ChromeDriverManager().install()
+        service = Service(executable_path=webdriver_manager)
         self.driver = webdriver.Chrome(service=service, options=options)
 
         # URLs
@@ -109,50 +193,11 @@ class BazosScrapper:
 
         print(_dict)
 
-    def check_user_files_available(self) -> None:
-        if (not os.path.isfile(f"{settings.COOKIES_FILE}_{self.bazos_country}.pkl")  # nosec
-                or not os.path.isfile(f"{settings.LOCAL_STORAGE_FILE}_{self.bazos_country}.pkl")):  # nosec
-            self.save_authentication(user=self.user)
-
-    def check_authentication(self) -> None:
-        user_input = self.driver.find_elements(
-            By.XPATH, XPathsBazos.user_inputs)
-        # tel_input = self.driver.find_element(By.XPATH, XPathsBazos.auth_phone_input)
-        if len(user_input) != 3:  # Mean is Authenticated, because there is not "Overit" button
-            self.save_authentication(user=self.user)
-
     def load_page_with_cookies(self) -> None:
         self.driver.get(self.url_moje_inzeraty)
         for cookie_dict in pickle.load(open(f"{settings.COOKIES_FILE}_{self.bazos_country}.pkl", 'rb')):  # nosec
             self.driver.add_cookie(cookie_dict)
         self.driver.get(self.url_moje_inzeraty)
-
-    def save_authentication(self, user: User) -> None:
-        self.driver.get(self.url_moje_inzeraty)
-
-        # Prepare authentication
-        telefon_input = self.driver.find_element(
-            By.XPATH, XPathsBazos.auth_phone_input)
-        telefon_input.clear()
-        telefon_input.send_keys(user.phone_number)
-        self.driver.find_element(
-            By.XPATH, XPathsBazos.auth_phone_check_submit).click()  # Submit
-
-        # Authenticate
-        code_input = self.driver.find_element(
-            By.XPATH, XPathsBazos.auth_code_input)
-        code_input.clear()
-        code_input.send_keys(
-            input('Please provide authentification code sended to your phone: '))
-        self.driver.find_element(
-            By.XPATH, XPathsBazos.auth_code_submit).click()  # Submit
-
-        # Save cookies
-        pickle.dump(self.driver.get_cookies(),
-                    file=open(f"{settings.COOKIES_FILE}_{self.bazos_country}.pkl", "wb"))  # nosec
-        # Save Local Storage
-        pickle.dump(self.driver.execute_script("return window.localStorage;"),
-                    file=open(f"{settings.LOCAL_STORAGE_FILE}_{self.bazos_country}.pkl", "wb"))  # nosec
 
     def remove_advertisment(self, user: User):
         self.driver.find_element(By.CLASS_NAME, 'inzeratydetdel').find_element(
@@ -255,7 +300,7 @@ class BazosScrapper:
         self.driver.quit()
 
 
-def bazos(cli_args: vars) -> None:
+def bazos_main(cli_args: vars) -> None:
     for country in cli_args['country']:
         print(f"==> Processing country: {country}")
         if cli_args['print_rubrics']:
@@ -278,4 +323,4 @@ def bazos(cli_args: vars) -> None:
 
 
 if __name__ == '__main__':
-    bazos({})
+    bazos_main({})

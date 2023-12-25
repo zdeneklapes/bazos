@@ -9,7 +9,7 @@ services:
     image: zdeneklapes/${COMPOSE_PROJECT_NAME}:latest
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile_selenium2
     volumes:
       - ./:/app/ # Mount the project directory to the container
       - ./tmp/fish/:/root/.local/share/fish/ # Mount the fish shell history, to remain files when docker container is rebuild: This will create ./tmp/fish/ folder in the project directory if it doesn't exist already
