@@ -4,6 +4,11 @@ from typing import Dict, Any
 
 from bazos.main import bazos as bz
 
+__version__ = "0.1.0"
+__apiversion__ = "0.1.0"
+__author__ = 'Zdenek Lapes'
+__license__ = 'MIT'
+
 
 def parse_cli_argument() -> Dict[str, Any]:
     parser = argparse.ArgumentParser()

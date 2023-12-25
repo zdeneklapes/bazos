@@ -1,3 +1,44 @@
+## Build
+#[build-system]
+#requires = ["setuptools"]
+#build-backend = "setuptools.build_meta"
+#
+#[project]
+#authors = [
+#    {name = "Zdenek Lapes", email = "lapes.zdenek@gmail.com"}
+#]
+#name = "bazos"
+#version = "0.1.0"
+#description = "Bazos api (scraping) for python"
+#readme = "README.md"
+#keywords = [
+#    "bazos",
+#    "api",
+#    "scraping",
+#    "python",
+#    "bazos.cz",
+#    "bazos.sk",
+#    "bazos.at",
+#    "bazos.pl",
+#]
+#license = { file = "LICENSE" }
+#requires-python = ">=3.10"
+#dynamic = [
+#    "dependencies",
+#]
+#
+## TODO: Fix exeting the bazos command on cli
+#[tool.setuptools.packages.find]
+#where = ["."]
+#include = ["bazos.*"]
+#namespaces = false
+#
+#[tool.setuptools.dynamic]
+#dependencies = { file = ["requirements.txt"] }
+#
+#[project.scripts]
+#bazos = "bazos.__init__:main"
+
 [tool.ruff]
 line-length = 120
 select = ["E", "F"] # Enable Pyflakes `E` and `F` codes by default.

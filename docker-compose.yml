@@ -12,9 +12,11 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./:/app/ # Mount the project directory to the container
-      - $HOME/Documents/photos-archive/bazos:/app/images/bazos/
-    #      - ./tmp/fish/:/root/.local/share/fish/ # Mount the fish shell history, to remain files when docker container is rebuild: This will create ./tmp/fish/ folder in the project directory if it doesn't exist already
-    #      - ./bazos/:/app/bazos/
-    #      - ./scripts/:/app/scripts
+      - ./tmp/fish/:/root/.local/share/fish/ # Mount the fish shell history, to remain files when docker container is rebuild: This will create ./tmp/fish/ folder in the project directory if it doesn't exist already
+      - $HOME/Documents/photos-archive/bazos:/tmp/images/
+    ports:
+      - 4444:4444
+      - 8090:8090
+      - 9050:9050
     stdin_open: true
     tty: true

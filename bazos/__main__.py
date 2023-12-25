@@ -1,5 +1,6 @@
-from bazos.__init__ import main
-main()
+# from bazos.__init__ import main
+# main()
+
 #
 # from selenium.webdriver.chrome.options import Options
 # from selenium import webdriver

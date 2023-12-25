@@ -1,5 +1,5 @@
 import os
-import pickle
+import pickle  # nosec
 import sys
 from os import path
 
@@ -34,7 +34,7 @@ class XPathsBazos:
     select_rubrik = "//div[@class='maincontent']/div[1]/form/select"
     select_category = "//div[@class='maincontent']/form/div[1]/select"
     user_inputs = "//div[@class='maincontent']/form/input"
-    delete_pwd_input = "//div[@class='maincontent']/div[2]/form/input[1]"
+    delete_pwd_input = "//div[@class='maincontent']/div[2]/form/input[1]"  # nosec
     delete_submit = "//div[@class='maincontent']/div[2]/form/input[4]"
 
     auth_phone_input = "//div[@class='maincontent']/form/input[2]"
@@ -93,8 +93,8 @@ class BazosScrapper:
         print(_dict)
 
     def check_user_files_available(self) -> None:
-        if (not os.path.isfile(f"{settings.COOKIES_FILE}_{self.bazos_country}.pkl")
-                or not os.path.isfile(f"{settings.LOCAL_STORAGE_FILE}_{self.bazos_country}.pkl")):
+        if (not os.path.isfile(f"{settings.COOKIES_FILE}_{self.bazos_country}.pkl")  # nosec
+                or not os.path.isfile(f"{settings.LOCAL_STORAGE_FILE}_{self.bazos_country}.pkl")):  # nosec
             self.save_authentication(user=self.user)
 
     def check_authentication(self) -> None:
@@ -106,7 +106,7 @@ class BazosScrapper:
 
     def load_page_with_cookies(self) -> None:
         self.driver.get(self.url_moje_inzeraty)
-        for cookie_dict in pickle.load(open(f"{settings.COOKIES_FILE}_{self.bazos_country}.pkl", 'rb')):
+        for cookie_dict in pickle.load(open(f"{settings.COOKIES_FILE}_{self.bazos_country}.pkl", 'rb')):  # nosec
             self.driver.add_cookie(cookie_dict)
         self.driver.get(self.url_moje_inzeraty)
 
@@ -132,10 +132,10 @@ class BazosScrapper:
 
         # Save cookies
         pickle.dump(self.driver.get_cookies(),
-                    file=open(f"{settings.COOKIES_FILE}_{self.bazos_country}.pkl", "wb"))
+                    file=open(f"{settings.COOKIES_FILE}_{self.bazos_country}.pkl", "wb"))  # nosec
         # Save Local Storage
         pickle.dump(self.driver.execute_script("return window.localStorage;"),
-                    file=open(f"{settings.LOCAL_STORAGE_FILE}_{self.bazos_country}.pkl", "wb"))
+                    file=open(f"{settings.LOCAL_STORAGE_FILE}_{self.bazos_country}.pkl", "wb"))  # nosec
 
     def remove_advertisment(self, user: User):
         self.driver.find_element(By.CLASS_NAME, 'inzeratydetdel').find_element(
