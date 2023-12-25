@@ -8,4 +8,4 @@ pysocks==1.7.1
 selenium==4.10.0
 tomli==2.0.1
 versioneer==0.29
-webdriver-manager==3.8.6
+webdriver-manager==4.0.1

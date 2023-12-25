@@ -1,3 +1,5 @@
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 import os
 import pickle  # nosec
 import sys
@@ -18,6 +20,8 @@ from bazos.info.rubric_category import get_rubric, get_category
 
 
 load_dotenv()
+
+# vim test.py
 
 
 ################################################################################
@@ -50,20 +54,26 @@ class XPathsBazos:
 
 class BazosScrapper:
     def __init__(self, country: str, cli_args: dict):
-        self.user = User(country=country, products_path=cli_args['path'])
-        self.bazos_country = country
-        service = Service()
+
+        options = Options()
+        # options.binary_location = '/usr/bin/google-chrome'
+        options.add_argument('--headless')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
+        webdriver_manager = ChromeDriverManager().install()
+        service = Service(executable_path=webdriver_manager)
         options = webdriver.ChromeOptions()
         self.driver = webdriver.Chrome(service=service, options=options)
 
-        self.advertisements: int
-
         # URLs
+        self.user = User(country=country, products_path=cli_args['path'])
+        self.bazos_country = country
+        self.advertisements: int
         self.url_bazos = f"https://bazos.{country}"
         self.url_moje_inzeraty = path.join(self.url_bazos, 'moje-inzeraty.php')
 
-    def __del__(self):
-        self.driver.quit()
+    # def __del__(self):
+    #     self.driver.close()
 
     def print_all_rubrics_and_categories(self):
         self.driver.find_element(

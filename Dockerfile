@@ -22,10 +22,17 @@ RUN set -ex && \
     echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list && \
     apt-get update -y
 
-RUN set -ex && \
-    apt-get install -y google-chrome-stable && \
-    export CHROMEVER=$(google-chrome --product-version | grep -o "[^\.]*\.[^\.]*\.[^\.]*") && \
-    export DRIVERVER=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROMEVER")
+#RUN set -ex && \
+#    apt-get install -y google-chrome-stable && \
+#    export CHROMEVER=$(google-chrome --product-version | grep -o "[^\.]*\.[^\.]*\.[^\.]*") && \
+#    export DRIVERVER=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROMEVER")
+
+ARG CHROME_VERSION="116.0.5845.187-1"
+RUN wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb \
+  && apt install -y /tmp/chrome.deb \
+  && rm /tmp/chrome.deb
+
+#ENV DISPLAY=:99
 
 #RUN set -ex && \
 #    echo "Using chromedriver version: $DRIVERVER"
@@ -46,18 +53,21 @@ RUN set -ex && \
 #RUN rm google-chrome-stable_current_amd64.deb
 
 
-COPY requirements.txt /app/requirements.txt
+COPY requirements.txt setup.py README.md /app/
+#COPY setup.py /app/
+#COPY requirements.txt /app/
+COPY bazos /app/bazos
 
+WORKDIR /app
 RUN set -ex && \
     pip install --upgrade pip && \
     pip install -r /app/requirements.txt
 
-#RUN set -ex && \
-#    pip install -e .
+RUN set -ex && \
+    pip install -e /app
 
 # set the proxy addresses
 #ENV HTTP_PROXY "http://134.209.29.120:8080"
 #ENV HTTPS_PROXY "https://45.77.71.140:9050"
 
-WORKDIR /app
 CMD ["fish"]
