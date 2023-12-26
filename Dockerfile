@@ -26,13 +26,13 @@ ENV TZ "US/Eastern"
 RUN echo "US/Eastern" | tee /etc/timezone
 RUN dpkg-reconfigure --frontend noninteractive tzdata
 
-# Install utilities
+## Install utilities
 RUN apt-get -yqq install ca-certificates curl dnsutils man openssl unzip wget
 
-# Install xvfb and fonts
+## Install xvfb and fonts
 RUN apt-get -yqq install xvfb fonts-ipafont-gothic xfonts-100dpi xfonts-75dpi xfonts-scalable xfonts-cyrillic
 
-# Install Fluxbox (window manager)
+## Install Fluxbox (window manager)
 RUN apt-get -yqq install fluxbox
 
 # Install VNC
@@ -136,4 +136,5 @@ EXPOSE 4444 5900
 ENV DISPLAY=:99
 
 WORKDIR /app
-CMD ["/app/make.sh", "entrypoint"]
+CMD ["fish"]
+#CMD ["/app/make.sh", "entrypoint"]

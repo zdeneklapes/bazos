@@ -3,8 +3,8 @@ version: '3.6'
 name: bazos-api
 
 services:
-  bazos-api:
-    container_name: ${COMPOSE_PROJECT_NAME}
+  bazos:
+    container_name: ${COMPOSE_PROJECT_NAME}-bazos
     # Here must be defined both image and build, because we use different .env files with which are the images build
     image: zdeneklapes/${COMPOSE_PROJECT_NAME}:latest
     build:
@@ -15,19 +15,36 @@ services:
       - ./tmp/fish/:/root/.local/share/fish/ # Mount the fish shell history, to remain files when docker container is rebuild: This will create ./tmp/fish/ folder in the project directory if it doesn't exist already
       - ./tmp/fish/:/home/user1/.local/share/fish/ # Mount the fish shell history, to remain files when docker container is rebuild: This will create ./tmp/fish/ folder in the project directory if it doesn't exist already
       - $HOME/Documents/photos-archive/bazos:/tmp/images/
-    ports:
-      - 4444:4444
-      - 8090:8090
-      - 9050:9050
     stdin_open: true
     tty: true
     depends_on:
-      - selenium-chrome
-  selenium-chrome:
+      - selenium
+#    env_file:
+#      - .env
+    environment:
+      - SELENIUM_URL='http://selenium:4444'
+  selenium:
+    container_name: ${COMPOSE_PROJECT_NAME}-selenium
     image: selenium/standalone-chrome:latest
     ports:
       - "4444:4444"
       - "7900:7900"
     shm_size: "2g"
-    container_name: selenium-chrome-container
-    restart: unless-stopped
+  chrome:
+    image: selenium/node-chrome:4.16.1-20231219
+    shm_size: 2gb
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+  selenium-hub:
+    image: selenium/hub:4.16.1-20231219
+    container_name: selenium-hub
+    ports:
+      - "4442:4442"
+      - "4443:4443"
+      - "4444:4444"
+#    volumes:
+#      - ./Hub/example-config.toml:/opt/selenium/config.toml
