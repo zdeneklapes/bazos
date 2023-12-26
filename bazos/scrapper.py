@@ -13,7 +13,6 @@ from selenium.webdriver.chrome.options import Options
 
 from bazos.core import settings
 from bazos.info.product import Product, get_all_products
-from bazos.shared.utils import wait_random_time
 from bazos.info.rubric_category import get_rubric, get_category
 from bazos.shared.utils import parse_yaml
 
@@ -221,11 +220,8 @@ class BazosScrapper:
                 print(f"Removing[{i}/{self.advertisements}]: {element.text}")
 
             #
-            wait_random_time()
             element.find_element(By.TAG_NAME, 'a').click()
-            wait_random_time()
             self.remove_advertisment()
-            wait_random_time()
 
     def add_advertisement(self, product: Product):
         # Rubrik
@@ -235,12 +231,10 @@ class BazosScrapper:
         # Product
         select_category = Select(self.driver.find_element(By.XPATH, XPathsBazos.product_category))
         select_category.select_by_visible_text(get_category(self.country, product.rubric, product.category))
-        wait_random_time()
         self.driver.find_element(By.ID, 'nadpis').send_keys(product.title)
         self.driver.find_element(By.ID, 'popis').send_keys(product.description)
         self.driver.find_element(By.ID, 'cena').send_keys(product.get_location_price(self.country))
 
-        wait_random_time()
         self.driver.find_element(By.ID, 'lokalita').clear()
         self.driver.find_element(By.ID, 'lokalita').send_keys(getattr(self.user, 'psc'))
         self.driver.find_element(By.ID, 'jmeno').clear()
@@ -252,11 +246,9 @@ class BazosScrapper:
         self.driver.find_element(By.ID, 'heslobazar').clear()
         self.driver.find_element(By.ID, 'heslobazar').send_keys(getattr(self.user, 'password'))
 
-        wait_random_time()
         self.driver.find_element(By.CLASS_NAME, 'ovse').click()
         self.driver.find_element(By.XPATH, XPathsBazos.product_img_input).send_keys('\n'.join(product.images))
 
-        wait_random_time()
         self.driver.find_element(By.XPATH, XPathsBazos.product_submit).click()
 
     def create_advertisements(self) -> None:
@@ -276,10 +268,8 @@ class BazosScrapper:
                 print(f"Adding[{idx}/{self.advertisements}]: {product.product_path}")
 
             # product not advertised ADD them
-            wait_random_time()
             self.driver.find_element(By.CLASS_NAME, 'pridati').click()  # go to add page
 
-            wait_random_time()
             self.driver.find_elements(By.CLASS_NAME, 'iconstblcell')[0].click()
             self.add_advertisement(product=product)
 

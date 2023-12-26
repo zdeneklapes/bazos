@@ -14,33 +14,33 @@ __license__ = 'MIT'
 
 def parse_cli_argument() -> Dict[str, Any]:
     parser = argparse.ArgumentParser()
-    BOOL_AS_STR_ARGUMENTS_for_parser_add_argument = dict(
+    BOOL_AS_STR_ARGUMENTS_FALSE = dict(
         type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True
+    )
+    BOOL_AS_STR_ARGUMENTS_TRUE = dict(
+        type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True
     )
     # true/false
     parser.add_argument('--login',
-                        **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument,
+                        **BOOL_AS_STR_ARGUMENTS_FALSE,
                         help='Login to bazos')
     parser.add_argument('--bazos',
-                        **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument,
+                        **BOOL_AS_STR_ARGUMENTS_FALSE,
                         help='Use bazos')
-    parser.add_argument('--add-only',
-                        **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument,
-                        help='Add only new products, not remove old ones')
     parser.add_argument('--print-rubrics',
-                        **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument,
+                        **BOOL_AS_STR_ARGUMENTS_FALSE,
                         help='Print rubrics')
     parser.add_argument("--verbose",
-                        **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument,
+                        **BOOL_AS_STR_ARGUMENTS_TRUE,
                         help='Verbose')
     parser.add_argument("--delete-all",
-                        **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument,
+                        **BOOL_AS_STR_ARGUMENTS_FALSE,
                         help='Verbose')
     parser.add_argument("--create-all",
-                        **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument,
+                        **BOOL_AS_STR_ARGUMENTS_TRUE,
                         help='Verbose')
     parser.add_argument('--remote',
-                        **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument,
+                        **BOOL_AS_STR_ARGUMENTS_FALSE,
                         help='Use remote')
     # ?
     parser.add_argument('--items-path',
@@ -105,7 +105,6 @@ def main():
                 bazos_scrapper.delete_advertisements()
             if args['create_all']:
                 bazos_scrapper.create_advertisements()
-    sys.exit()
 
 
 if __name__ == '__main__':
