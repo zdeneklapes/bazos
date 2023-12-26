@@ -1,4 +1,5 @@
 bandit==1.7.5
+bazos==0.1.0
 colorama==0.4.6
 currencyconverter==0.17.9
 forex-python==1.8
@@ -7,5 +8,6 @@ pip-chill==1.0.3
 pysocks==1.7.1
 selenium==4.10.0
 tomli==2.0.1
+tqdm==4.66.1
 versioneer==0.29
-webdriver-manager==3.8.6
+webdriver-manager==4.0.1

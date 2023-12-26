@@ -17,7 +17,7 @@ def parse_yaml(filename: str) -> Optional[Union[Dict[str, str], FileNotFoundErro
 
 
 def wait_random_time():
-    time.sleep(random.random() * 1)
+    time.sleep(random.random() * 1)  # nosec
 
 
 def wait_n_seconds(seconds: int):
@@ -56,7 +56,7 @@ def refactor_info_txt(_path: str):
     for dir in next(os.walk(_path))[1]:  # loop through all directories
         file = path.join(_path, dir, 'info.txt')
 
-        assert path.isfile(file), 'File not exist: info.txt'
+        assert path.isfile(file), 'File not exist: info.txt'  # nosec
 
         with open(file=file, mode='r') as f:
             lines = f.readlines()

@@ -97,12 +97,15 @@ pre-commit install
 ### Create virtual environment + install dependencies
 
 ```shell
+./make.sh dev_docker_up
+
+# or locally
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 pip install -e .
 
-# Try run
+# And then you can try:
 python3 bazos --help
 ```
 
