@@ -2,6 +2,7 @@ import os
 import pickle  # nosec
 import sys
 from os import path
+from typing import Literal
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -44,12 +45,20 @@ class XPathsBazos:
     product_img_input = "//div[@class='maincontent']/form/div[1]/input[3]"
 
 
+class BazosUrls:
+    @staticmethod
+    def base_url(country: Literal["cz", "sk"]) -> str:
+        return f"https://bazos.{country}"
+
+    @staticmethod
+    def moje_inzeraty_url(country: Literal["cz", "sk"]) -> str:
+        return path.join(BazosUrls.base_url(country), 'moje-inzeraty.php')
+
+
 class BazosDriver:
     def __init__(self, country: str, args: dict):
         self.args = args
         self.country = country
-        self.bazos_base_url = f"https://bazos.{country}"
-        self.bazos_moje_inzeraty_url = path.join(self.bazos_base_url, 'moje-inzeraty.php')
         self.driver = self.get_driver()
 
     def set_chrome_options(self) -> Options:
@@ -132,7 +141,7 @@ class BazosUser:
             return False
 
     def authenticate(self) -> None:
-        self.driver.get(self.bazos_moje_inzeraty_url)
+        self.driver.get(BazosUrls.moje_inzeraty_url(self.country))
 
         # Prepare authentication
         telefon_input = self.driver.find_element(By.XPATH, XPathsBazos.auth_phone_input)
@@ -162,8 +171,6 @@ class BazosScrapper:
         self.driver = driver
         self.args = args
         self.country = country
-        self.bazos_base_url = f"https://bazos.{country}"
-        self.bazos_moje_inzeraty_url = path.join(self.bazos_base_url, 'moje-inzeraty.php')
         self.user = user
         self.advertisements: int
 
@@ -195,13 +202,13 @@ class BazosScrapper:
         print(_dict)
 
     def load_page_with_cookies(self) -> None:
-        self.driver.get(self.bazos_moje_inzeraty_url)
+        self.driver.get(BazosUrls.moje_inzeraty_url(self.country))
         cookies_file = self.args["credentials_path"] / f"{settings.COOKIES_FILE}_{self.country}.pkl"
         for cookie_dict in pickle.load(open(cookies_file, 'rb')):  # nosec
             self.driver.add_cookie(cookie_dict)
-        self.driver.get(self.bazos_moje_inzeraty_url)
+        self.driver.get(BazosUrls.moje_inzeraty_url(self.country))
 
-    def remove_advertisment(self):
+    def delete_advertisement(self):
         del_btn = self.driver.find_element(By.CLASS_NAME, 'inzeratydetdel').find_element(By.TAG_NAME, 'a')
         del_btn.click()
         pwd_input = self.driver.find_element(By.XPATH, XPathsBazos.delete_pwd_input)
@@ -209,7 +216,7 @@ class BazosScrapper:
         pwd_input.send_keys(getattr(self.user, 'password'))
         self.driver.find_element(By.XPATH, XPathsBazos.delete_submit).click()  # Submit-Delete
 
-    def delete_advertisements(self):
+    def delete_all_advertisements(self):
         self.advertisements = len(self.driver.find_elements(By.CLASS_NAME, 'nadpis'))
 
         if self.args['verbose']:
@@ -221,9 +228,9 @@ class BazosScrapper:
 
             #
             element.find_element(By.TAG_NAME, 'a').click()
-            self.remove_advertisment()
+            self.delete_advertisement()
 
-    def add_advertisement(self, product: Product):
+    def create_advertisement(self, product: Product):
         # Rubrik
         select_rubrik = Select(self.driver.find_element(By.XPATH, XPathsBazos.product_rubric))
         select_rubrik.select_by_visible_text(get_rubric(self.country, product.rubric))
@@ -251,7 +258,7 @@ class BazosScrapper:
 
         self.driver.find_element(By.XPATH, XPathsBazos.product_submit).click()
 
-    def create_advertisements(self) -> None:
+    def create_all_advertisements(self) -> None:
         products = get_all_products(products_path=self.args["items_path"], country=self.country)
         self.advertisements = len(products)
 
@@ -271,7 +278,7 @@ class BazosScrapper:
             self.driver.find_element(By.CLASS_NAME, 'pridati').click()  # go to add page
 
             self.driver.find_elements(By.CLASS_NAME, 'iconstblcell')[0].click()
-            self.add_advertisement(product=product)
+            self.create_advertisement(product=product)
 
     def product_already_advertised(self, product: Product) -> bool:
         self.load_page_with_cookies()
