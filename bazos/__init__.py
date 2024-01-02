@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 import sys
-from typing import Dict, Any, Callable
+from typing import Any, Callable, Dict
 from distutils.util import strtobool  # noqa
 
 from bazos.scrapper import BazosScrapper, BazosUser, BazosDriver
@@ -38,6 +38,13 @@ def parse_cli_argument() -> Dict[str, Any]:
     parser.add_argument('--remote',
                         **BOOL_AS_STR_ARGUMENTS_FALSE,
                         help='Use remote')
+    # Possible values: fast, slow
+    parser.add_argument('--mode',
+                        type=str,
+                        choices=['fast', 'slow'],
+                        default='fast',
+                        nargs='?',
+                        help='Mode')
     # ?
     parser.add_argument('--items-path',
                         type=Path,
@@ -80,6 +87,7 @@ def main():
     # Print arguments
     if args['verbose']:
         print(' '.join(sys.argv))
+        print(args)
 
     bazos_driver = BazosDriver(args=args, country='cz')
     for country in args['country']:

@@ -15,7 +15,7 @@ from selenium.webdriver.chrome.options import Options
 from bazos.core import settings
 from bazos.info.product import Product, get_all_products
 from bazos.info.rubric_category import get_rubric, get_category
-from bazos.shared.utils import parse_yaml
+from bazos.shared.utils import parse_yaml, wait_random_time
 
 
 ################################################################################
@@ -214,6 +214,8 @@ class BazosScrapper:
         pwd_input = self.driver.find_element(By.XPATH, XPathsBazos.delete_pwd_input)
         pwd_input.clear()
         pwd_input.send_keys(getattr(self.user, 'password'))
+        if self.args['mode'] == 'slow':
+            wait_random_time(coef=1)
         self.driver.find_element(By.XPATH, XPathsBazos.delete_submit).click()  # Submit-Delete
 
     def delete_all_advertisements(self):
@@ -222,6 +224,8 @@ class BazosScrapper:
         if self.args['verbose']:
             print("==> Removing old advertisements")
         for i in range(self.advertisements):
+            if self.args['mode'] == 'slow':
+                wait_random_time(coef=1)
             element = self.driver.find_element(By.CLASS_NAME, 'nadpis')
             if self.args['verbose']:
                 print(f"Removing[{i}/{self.advertisements}]: {element.text}")
@@ -256,6 +260,8 @@ class BazosScrapper:
         self.driver.find_element(By.CLASS_NAME, 'ovse').click()
         self.driver.find_element(By.XPATH, XPathsBazos.product_img_input).send_keys('\n'.join(product.images))
 
+        if self.args['mode'] == 'slow':
+            wait_random_time(coef=1)
         self.driver.find_element(By.XPATH, XPathsBazos.product_submit).click()
 
     def create_all_advertisements(self) -> None:
@@ -265,6 +271,8 @@ class BazosScrapper:
         if self.args['verbose']:
             print("==> Adding advertisements")
         for idx, product in enumerate(products):
+            if self.args['mode'] == 'slow':
+                wait_random_time(coef=1)
 
             if self.product_already_advertised(product):
                 if self.args['verbose']:
