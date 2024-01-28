@@ -27,6 +27,12 @@ def click_submit_by_value(submits: [WebElement], value: str):
             submit.click()
 
 
+def get_files(credentials_path: path, country: str, phone_number: str) -> tuple:
+    cookies_file = credentials_path / f"{settings.COOKIES_FILE}_{country}_{phone_number}.pkl"
+    local_storage_file = credentials_path / f"{settings.LOCAL_STORAGE_FILE}_{country}_{phone_number}.pkl"
+    return (cookies_file, local_storage_file)
+
+
 class XPathsBazos:
     select_rubrik = "//div[@class='maincontent']/div[1]/form/select"
     select_category = "//div[@class='maincontent']/form/div[1]/select"
@@ -34,10 +40,17 @@ class XPathsBazos:
     delete_pwd_input = "//div[@class='maincontent']/div[2]/form/input[1]"  # nosec
     delete_submit = "//div[@class='maincontent']/div[2]/form/input[4]"
 
-    auth_phone_input = "//div[@class='maincontent']/form/input[2]"
+    auth_phone_input = "//div[@class='maincontent']/form[2]/input[2]"
     auth_phone_check_submit = "//div[@class='maincontent']/form/input[4]"
     auth_code_input = "//div[@class='maincontent']/div[1]/form/input[1]"
     auth_code_submit = "//div[@class='maincontent']/div[1]/form/input[3]"
+
+    auth_condition = "//*[@id='podminky']"
+    auth_within_pridat_phone_input = "//*[@id='teloverit']"
+    auth_within_pridat_button = "/html/body/div/div[3]/div[2]/div/form/input[3]"
+
+    is_auth1 = "//*[@id='teloverit']"
+    is_auth2 = "//*[@id='podminky']"
 
     product_submit = "//div[@class='maincontent']/form/div/input[6]"
     product_rubric = "//div[@class='maincontent']/div[1]/form/select"
@@ -53,6 +66,10 @@ class BazosUrls:
     @staticmethod
     def moje_inzeraty_url(country: Literal["cz", "sk"]) -> str:
         return path.join(BazosUrls.base_url(country), 'moje-inzeraty.php')
+
+    @staticmethod
+    def get_url(country: Literal["cz", "sk"]) -> str:
+        return path.join(BazosUrls.base_url(country), 'pridat-inzerat.php')
 
 
 class BazosDriver:
@@ -135,7 +152,7 @@ class BazosUser:
             if raise_exception:
                 raise FileNotFoundError("User files not found, please login - login flag: --login")
 
-    def is_authentication(self) -> bool:
+    def is_authenticated(self) -> bool:
         user_input = self.driver.find_elements(By.XPATH, XPathsBazos.user_inputs)
         if len(user_input) != 3:  # Mean is Authenticated, because there is not "Overit" button
             return False
@@ -157,8 +174,11 @@ class BazosUser:
         self.driver.find_element(By.XPATH, XPathsBazos.auth_code_submit).click()  # Submit
 
     def save_user_credentials(self) -> None:
-        cookies_file = self.args["credentials_path"] / f"{settings.COOKIES_FILE}_{self.country}.pkl"
-        local_storage_file = self.args["credentials_path"] / f"{settings.LOCAL_STORAGE_FILE}_{self.country}.pkl"
+        cookies_file, local_storage_file = get_files(
+            credentials_path=self.args["credentials_path"],
+            country=self.country,
+            phone_number=getattr(self, 'phone_number')
+        )
         cookies = self.driver.get_cookies()
         local_storage = self.driver.execute_script("return window.localStorage;")
         pickle.dump(cookies, file=open(cookies_file.__str__(), "wb"))  # nosec
@@ -201,12 +221,22 @@ class BazosScrapper:
 
         print(_dict)
 
-    def load_page_with_cookies(self) -> None:
-        self.driver.get(BazosUrls.moje_inzeraty_url(self.country))
-        cookies_file = self.args["credentials_path"] / f"{settings.COOKIES_FILE}_{self.country}.pkl"
+    def load_page_with_cookies(self, page: Literal["my_adds", "create"] = "my_adds") -> None:
+        cookies_file, _ = get_files(credentials_path=self.args["credentials_path"],
+                                    country=self.country,
+                                    phone_number=getattr(self.user, 'phone_number'))
+        if page == "my_adds":
+            self.driver.get(BazosUrls.moje_inzeraty_url(self.country))
+        elif page == "create":
+            self.driver.get(BazosUrls.get_url(self.country))
+
         for cookie_dict in pickle.load(open(cookies_file, 'rb')):  # nosec
             self.driver.add_cookie(cookie_dict)
-        self.driver.get(BazosUrls.moje_inzeraty_url(self.country))
+
+        if page == "my_adds":
+            self.driver.get(BazosUrls.moje_inzeraty_url(self.country))
+        elif page == "create":
+            self.driver.get(BazosUrls.get_url(self.country))
 
     def delete_advertisement(self):
         del_btn = self.driver.find_element(By.CLASS_NAME, 'inzeratydetdel').find_element(By.TAG_NAME, 'a')
@@ -286,6 +316,22 @@ class BazosScrapper:
             self.driver.find_element(By.CLASS_NAME, 'pridati').click()  # go to add page
 
             self.driver.find_elements(By.CLASS_NAME, 'iconstblcell')[0].click()
+            # self.load_page_with_cookies(page="create")
+
+            # TODO: Fix authentification
+            if self.user.is_authenticated():
+                self.user.authenticate()
+                # self.driver.find_element(By.XPATH, XPathsBazos.auth_condition).click()
+                # self.driver.find_element(By.XPATH, XPathsBazos.auth_within_pridat_phone_input).clear()
+                # self.driver.find_element(
+                # By.XPATH, XPathsBazos.auth_within_pridat_phone_input
+                # ).send_keys(getattr(self.user, 'phone_number'))
+                # self.driver.find_element(By.XPATH, XPathsBazos.auth_within_pridat_button).click()
+                # self.driver.find_element(By.XPATH, XPathsBazos.auth_code_input).clear()
+                # (self.driver.find_element(By.XPATH, XPathsBazos.auth_code_input)
+                #  .send_keys(input('Please provide authentification code sended to your phone: ')))
+                # self.driver.find_element(By.XPATH, XPathsBazos.auth_code_submit).click()
+
             self.create_advertisement(product=product)
 
     def product_already_advertised(self, product: Product) -> bool:
