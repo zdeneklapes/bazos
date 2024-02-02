@@ -270,14 +270,13 @@ class BazosScrapper:
         )
 
         for i in range(self.size_new_products):
-            wait_random_time(args=self.args, coef=2)
             element = self.driver.find_element(By.CLASS_NAME, 'nadpis')
             verbose_print(
                 args=self.args,
                 message=f"Removing[{i}/{self.size_new_products}]: {element.text}"
             )
 
-            #
+            wait_random_time(args=self.args, coef=2)
             element.find_element(By.TAG_NAME, 'a').click()
             self.delete_advertisement()
 
@@ -320,8 +319,6 @@ class BazosScrapper:
             message=f"Adding {self.size_new_products} new advertisements"
         )
         for idx, product in enumerate(new_products):
-            wait_random_time(args=self.args, coef=2)
-
             if self.product_already_advertised(product):
                 verbose_print(
                     args=self.args,
@@ -338,6 +335,7 @@ class BazosScrapper:
 
             # product not advertised ADD them
             self.driver.find_element(By.CLASS_NAME, 'pridati').click()  # go to add page
+            wait_random_time(args=self.args, coef=2)
             self.driver.find_elements(By.CLASS_NAME, 'iconstblcell')[0].click()
             self.create_advertisement(product=product)
 
