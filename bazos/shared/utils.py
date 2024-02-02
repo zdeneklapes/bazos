@@ -16,8 +16,11 @@ def parse_yaml(filename: str) -> Optional[Union[Dict[str, str], FileNotFoundErro
         return yaml_parsed
 
 
-def wait_random_time(coef: int = 1):
-    time.sleep(random.random() * coef)  # nosec
+def wait_random_time(args: dict, coef):
+    if args.get('mode') == 'slow':
+        time_to_wait = random.random() * coef  # nosec
+        time.sleep(time_to_wait)
+        print(f"...waiting {time_to_wait} seconds")
 
 
 def wait_n_seconds(seconds: int):

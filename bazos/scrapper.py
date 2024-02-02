@@ -13,13 +13,18 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 
 from bazos.core import settings
-from bazos.info.product import Product, get_all_products
+from bazos.info.product import Product, load_products
 from bazos.info.rubric_category import get_rubric, get_category
 from bazos.shared.utils import parse_yaml, wait_random_time
 
 
 ################################################################################
 # BUG: Some images are rotated, when you upload them to bazos
+
+def verbose_print(args: dict, message: str):
+    if args.get('verbose') is True:
+        print(message)
+
 
 def click_submit_by_value(submits: [WebElement], value: str):
     for submit in submits:
@@ -158,6 +163,15 @@ class BazosUser:
             return False
 
     def authenticate(self) -> None:
+        # clear cookies
+        self.driver.delete_all_cookies()
+
+        # clear local storage
+        # self.driver.execute_script("window.localStorage.clear();")
+
+        # clear session storage
+        # self.driver.execute_script("window.sessionStorage.clear();")
+
         self.driver.get(BazosUrls.moje_inzeraty_url(self.country))
 
         # Prepare authentication
@@ -192,7 +206,7 @@ class BazosScrapper:
         self.args = args
         self.country = country
         self.user = user
-        self.advertisements: int
+        self.size_new_products: int
 
     def print_all_rubrics_and_categories(self):
         self.driver.find_element(
@@ -244,21 +258,24 @@ class BazosScrapper:
         pwd_input = self.driver.find_element(By.XPATH, XPathsBazos.delete_pwd_input)
         pwd_input.clear()
         pwd_input.send_keys(getattr(self.user, 'password'))
-        if self.args['mode'] == 'slow':
-            wait_random_time(coef=1)
+        wait_random_time(args=self.args, coef=2)
         self.driver.find_element(By.XPATH, XPathsBazos.delete_submit).click()  # Submit-Delete
 
     def delete_all_advertisements(self):
-        self.advertisements = len(self.driver.find_elements(By.CLASS_NAME, 'nadpis'))
+        self.size_new_products = len(self.driver.find_elements(By.CLASS_NAME, 'nadpis'))
 
-        if self.args['verbose']:
-            print("==> Removing old advertisements")
-        for i in range(self.advertisements):
-            if self.args['mode'] == 'slow':
-                wait_random_time(coef=1)
+        verbose_print(
+            args=self.args,
+            message=f"Removing {self.size_new_products} old advertisements"
+        )
+
+        for i in range(self.size_new_products):
+            wait_random_time(args=self.args, coef=2)
             element = self.driver.find_element(By.CLASS_NAME, 'nadpis')
-            if self.args['verbose']:
-                print(f"Removing[{i}/{self.advertisements}]: {element.text}")
+            verbose_print(
+                args=self.args,
+                message=f"Removing[{i}/{self.size_new_products}]: {element.text}"
+            )
 
             #
             element.find_element(By.TAG_NAME, 'a').click()
@@ -268,6 +285,10 @@ class BazosScrapper:
         # Rubrik
         select_rubrik = Select(self.driver.find_element(By.XPATH, XPathsBazos.product_rubric))
         select_rubrik.select_by_visible_text(get_rubric(self.country, product.rubric))
+
+        # Upload images - 1st Task (Upload takes time)
+        self.driver.find_element(By.CLASS_NAME, 'ovse').click()
+        self.driver.find_element(By.XPATH, XPathsBazos.product_img_input).send_keys('\n'.join(product.images))
 
         # Product
         select_category = Select(self.driver.find_element(By.XPATH, XPathsBazos.product_category))
@@ -287,51 +308,37 @@ class BazosScrapper:
         self.driver.find_element(By.ID, 'heslobazar').clear()
         self.driver.find_element(By.ID, 'heslobazar').send_keys(getattr(self.user, 'password'))
 
-        self.driver.find_element(By.CLASS_NAME, 'ovse').click()
-        self.driver.find_element(By.XPATH, XPathsBazos.product_img_input).send_keys('\n'.join(product.images))
-
-        if self.args['mode'] == 'slow':
-            wait_random_time(coef=1)
+        wait_random_time(args=self.args, coef=2)
         self.driver.find_element(By.XPATH, XPathsBazos.product_submit).click()
 
     def create_all_advertisements(self) -> None:
-        products = get_all_products(products_path=self.args["items_path"], country=self.country)
-        self.advertisements = len(products)
+        new_products = load_products(products_path=self.args["items_path"], country=self.country)
+        self.size_new_products = len(new_products)
 
-        if self.args['verbose']:
-            print("==> Adding advertisements")
-        for idx, product in enumerate(products):
-            if self.args['mode'] == 'slow':
-                wait_random_time(coef=1)
+        verbose_print(
+            args=self.args,
+            message=f"Adding {self.size_new_products} new advertisements"
+        )
+        for idx, product in enumerate(new_products):
+            wait_random_time(args=self.args, coef=2)
 
             if self.product_already_advertised(product):
-                if self.args['verbose']:
-                    print(f"Skipping[{idx}/{self.advertisements}]: {product.product_path}")
+                verbose_print(
+                    args=self.args,
+                    message=f"Skipping[{idx}/{self.size_new_products}]: {product.product_path}"
+                )
                 continue
 
-            if self.args['verbose']:
-                print(f"Adding[{idx}/{self.advertisements}]: {product.product_path}")
+            verbose_print(
+                args=self.args,
+                message=f"Adding[{idx}/{self.size_new_products}]: {product.product_path}"
+            )
+
+            # TODO [BUG]: Fix authentication, right here for new users with deleted cookies, e.g. try example-data/
 
             # product not advertised ADD them
             self.driver.find_element(By.CLASS_NAME, 'pridati').click()  # go to add page
-
             self.driver.find_elements(By.CLASS_NAME, 'iconstblcell')[0].click()
-            # self.load_page_with_cookies(page="create")
-
-            # TODO: Fix authentification
-            if self.user.is_authenticated():
-                self.user.authenticate()
-                # self.driver.find_element(By.XPATH, XPathsBazos.auth_condition).click()
-                # self.driver.find_element(By.XPATH, XPathsBazos.auth_within_pridat_phone_input).clear()
-                # self.driver.find_element(
-                # By.XPATH, XPathsBazos.auth_within_pridat_phone_input
-                # ).send_keys(getattr(self.user, 'phone_number'))
-                # self.driver.find_element(By.XPATH, XPathsBazos.auth_within_pridat_button).click()
-                # self.driver.find_element(By.XPATH, XPathsBazos.auth_code_input).clear()
-                # (self.driver.find_element(By.XPATH, XPathsBazos.auth_code_input)
-                #  .send_keys(input('Please provide authentification code sended to your phone: ')))
-                # self.driver.find_element(By.XPATH, XPathsBazos.auth_code_submit).click()
-
             self.create_advertisement(product=product)
 
     def product_already_advertised(self, product: Product) -> bool:

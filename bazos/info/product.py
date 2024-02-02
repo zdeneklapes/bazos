@@ -93,7 +93,7 @@ class Product:
                     self.description += line
 
 
-def get_all_products(products_path: str, country: str) -> [Product]:
+def load_products(products_path: str, country: str) -> [Product]:
     print("==> Loading products")
 
     # Filter out all files and hidden directories
