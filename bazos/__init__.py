@@ -68,7 +68,7 @@ def parse_cli_argument() -> Dict[str, Any]:
 def loop_country(args, bazos_driver, callback: Callable):
     for country in args['country']:
         if args['verbose']:
-            print(f"==> Processing country: {country}")
+            print(f"\n==> Processing country: {country} =============================")
 
         bazos_user = BazosUser(country=country, args=args, driver=bazos_driver.driver)
         bazos_scrapper = BazosScrapper(country=country, args=args, user=bazos_user, driver=bazos_driver.driver)

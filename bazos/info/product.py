@@ -48,8 +48,12 @@ class Product:
         self.currency_rates = CurrencyRates()
 
     def get_images(self):
-        images = sorted(map(lambda x: path.join(self.product_path, 'photos', x),
-                            next(os.walk(path.join(self.product_path, 'photos')))[2]))
+        photos_folder = path.join(self.product_path, 'photos')
+        try:
+            all_files = next(os.walk(photos_folder))[2]
+        except StopIteration:
+            raise Exception(f"Directory not found: {photos_folder}")
+        images = sorted(map(lambda x: path.join(photos_folder, x), all_files))
         return [filename for filename in images if
                 filename.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif'))]
 

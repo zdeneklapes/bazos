@@ -184,8 +184,10 @@ class BazosUser:
         # Authenticate
         code_input = self.driver.find_element(By.XPATH, XPathsBazos.auth_code_input)
         code_input.clear()
-        code_input.send_keys(input('Please provide authentification code sended to your phone: '))
-        self.driver.find_element(By.XPATH, XPathsBazos.auth_code_submit).click()  # Submit
+        received_auth_code = input('Please provide authentification code sended to your phone: ')
+        code_input.send_keys(received_auth_code)
+        submit_button = self.driver.find_element(By.XPATH, XPathsBazos.auth_code_submit)
+        submit_button.click()  # Submit
 
     def save_user_credentials(self) -> None:
         cookies_file, local_storage_file = get_files(
@@ -197,6 +199,8 @@ class BazosUser:
         local_storage = self.driver.execute_script("return window.localStorage;")
         pickle.dump(cookies, file=open(cookies_file.__str__(), "wb"))  # nosec
         pickle.dump(local_storage, file=open(local_storage_file, "wb"))  # nosec
+        if self.args['verbose']:
+            print(f"User credentials saved to: {cookies_file}, {local_storage_file}")
 
 
 class BazosScrapper:
@@ -266,7 +270,7 @@ class BazosScrapper:
 
         verbose_print(
             args=self.args,
-            message=f"Removing {self.size_new_products} old advertisements"
+            message=f"Removing {self.size_new_products} advertisements"
         )
 
         for i in range(self.size_new_products):
@@ -308,7 +312,8 @@ class BazosScrapper:
         self.driver.find_element(By.ID, 'heslobazar').send_keys(getattr(self.user, 'password'))
 
         wait_random_time(args=self.args, coef=2)
-        self.driver.find_element(By.XPATH, XPathsBazos.product_submit).click()
+        button_create = self.driver.find_element(By.XPATH, XPathsBazos.product_submit)
+        button_create.click()
 
     def create_all_advertisements(self) -> None:
         new_products = load_products(products_path=self.args["items_path"], country=self.country)

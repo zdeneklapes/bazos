@@ -5,7 +5,6 @@ RM="rm -rfd"
 RED='\033[0;31m'
 NC='\033[0m'
 GREEN='\033[0;32m'
-DEBUG=1
 ZIP_NAME='TODO.zip'
 VPS_URI='TODO'
 
@@ -15,17 +14,17 @@ function prune_docker() {
     docker system prune --all --force --volumes
 
     # Remove all volumes: not just dangling ones
-    for i in $(docker volume ls --format json | jq -r ".Name"); do
-        docker volume rm -f ${i}
+    for photos_dir in $(docker volume ls --format json | jq -r ".Name"); do
+        docker volume rm -f ${photos_dir}
     done
 }
 
 function docker_show_ipaddress() {
     # Show ip address of running containers
     for docker_container in $(docker ps -aq); do
-        CMD1="$(docker ps -a | grep "${docker_container}" | grep --invert-match "Exited\|Created" | awk '{print $2}'): "
-        if [ ${CMD1} != ": " ]; then
-            printf "${CMD1}"
+        change_photo_to_reusable_format_cmd="$(docker ps -a | grep "${docker_container}" | grep --invert-match "Exited\|Created" | awk '{print $2}'): "
+        if [ ${change_photo_to_reusable_format_cmd} != ": " ]; then
+            printf "${change_photo_to_reusable_format_cmd}"
             printf "$(docker inspect ${docker_container} | grep "IPAddress" | tail -n 1)\n"
         fi
     done
@@ -163,6 +162,42 @@ function entrypoint() {
     /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
 }
 
+function prepare_images() {
+    # Change photos to reusable format and remove unnecessary user data
+    # png files are too large so we need to use jpg
+    # ENVIRONMENT VARIABLES
+    #   DEBUG: 1/0
+    #   ITEMS_PWD: photos root directory
+    #   WANT_FORMAT: jpg
+    # Examples: ./make.sh
+
+    # Check variables are set
+    if [ ${DEBUG} == "" ]; then DEBUG="1"; fi
+    if [ ${ITEMS_PWD} == "" ]; then die "ITEMS_PWD is not set"; fi
+    if [ ${WANT_FORMAT} == "" ]; then WANT_FORMAT="jpg"; fi
+
+    WANT_FORMAT="jpg"
+    for photos_dir in $(find "$ITEMS_PWD" -type d -iname "*photos*"); do
+        echo "Processing photos in: ${photos_dir}"
+        for photo in $(find "$photos_dir" -type f -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.JPG" -o -iname "*.JPEG" -o -iname "*.png"); do
+            echo "Processing photo: ${photo}"
+            change_photo_to_reusable_format_cmd="mogrify -format ${WANT_FORMAT} ${photo}"
+            remove_photo_cmd="rm ${photo}"
+            if [ "$DEBUG" -eq "1" ]; then echo ${change_photo_to_reusable_format_cmd}; else eval ${change_photo_to_reusable_format_cmd} || die "Error while converting photos"; fi
+            # if photo is pgn then skip removeing
+            local extension="${photo##*.}"
+            if [ "$extension" != "$WANT_FORMAT" ]; then
+                if [ "$DEBUG" -eq "1" ]; then echo ${remove_photo_cmd}; else eval ${remove_photo_cmd} || die "Error while removing photos"; fi
+            fi
+        done
+        remove_unnecessary_user_data_cmd="exiftool -all= $photos_dir/*.$WANT_FORMAT"
+        if [ "$DEBUG" -eq "1" ]; then echo ${remove_unnecessary_user_data_cmd}; else eval ${remove_unnecessary_user_data_cmd} || die "Error while removing unnecessary user data"; fi
+        remove_originals_cmd="rm $photos_dir/*_original"
+        if [ "$DEBUG" -eq "1" ]; then echo ${remove_originals_cmd}; else eval ${remove_originals_cmd} || die "Error while removing originals"; fi
+#        exit
+    done
+}
+
 function send() {
     # Send zipped project to VPS and then remove the zip file
     scp "${ZIP_NAME}" "${VPS_URI}"
@@ -172,7 +207,7 @@ function send() {
 function help() {
     # Print usage on stdout
     echo "Available functions:"
-    for file in ./scripts/*.sh; do
+    for file in ${BASH_SOURCE[0]}; do
         function_names=$(cat ${file} | grep -E "(\ *)function\ +.*\(\)\ *\{" | sed -E "s/\ *function\ +//" | sed -E "s/\ *\(\)\ *\{\ *//")
         for func_name in ${function_names[@]}; do
             printf "    $func_name\n"
@@ -189,8 +224,7 @@ function usage() {
 
 function die() {
     # Print error message on stdout and exit
-    printf "${RED}ERROR: $1${NC}\n"
-    help
+    printf "${RED}ERROR: %s for help run: \n./make.sh help${NC}\n" "$1" >&2
     exit 1
 }
 
