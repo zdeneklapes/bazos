@@ -1,5 +1,6 @@
 import os
 from os import path
+
 from currency_converter import CurrencyConverter
 
 product_info = {
@@ -59,7 +60,8 @@ class Product:
 
     def get_location_price(self, country: str) -> str:
         if country == 'sk':
-            return str(int(int(self.price) / self.currency_rates.get_rate("EURCZK") - 1))
+            price = str(int(int(self.price) / (self.currency_rates.get_rate("EURCZK") - 1)))
+            return price
         elif country == 'cz':
             return self.price
 
