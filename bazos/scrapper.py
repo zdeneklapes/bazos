@@ -29,11 +29,11 @@ def click_submit_by_value(submits: [WebElement], value: str):
 class XPathsBazos:
     select_rubrik = "//div[@class='maincontent']/div[1]/form/select"
     select_category = "//div[@class='maincontent']/form/div[1]/select"
-    user_inputs = "//div[@class='maincontent']/form/input"
+    user_inputs = "//div[@class='maincontent']/form[2]/input"
     delete_pwd_input = "//div[@class='maincontent']/div[2]/form/input[1]"  # nosec
     delete_submit = "//div[@class='maincontent']/div[2]/form/input[4]"
 
-    auth_phone_input = "//div[@class='maincontent']/form/input[2]"
+    auth_phone_input = "//div[@class='maincontent']/form[2]/input[2]"
     auth_phone_check_submit = "//div[@class='maincontent']/form/input[4]"
     auth_code_input = "//div[@class='maincontent']/div[1]/form/input[1]"
     auth_code_submit = "//div[@class='maincontent']/div[1]/form/input[3]"
@@ -233,7 +233,11 @@ class BazosScrapper:
         select_category.select_by_visible_text(get_category(self.country, product.rubric, product.category))
         self.driver.find_element(By.ID, 'nadpis').send_keys(product.title)
         self.driver.find_element(By.ID, 'popis').send_keys(product.description)
-        self.driver.find_element(By.ID, 'cena').send_keys(product.get_location_price(self.country))
+
+        if product.price.isnumeric():
+            self.driver.find_element(By.ID, 'cena').send_keys(product.price)
+        else:
+            Select(self.driver.find_element(By.ID, 'cenavyber')).select_by_visible_text(product.price)
 
         self.driver.find_element(By.ID, 'lokalita').clear()
         self.driver.find_element(By.ID, 'lokalita').send_keys(getattr(self.user, 'psc'))
@@ -247,7 +251,9 @@ class BazosScrapper:
         self.driver.find_element(By.ID, 'heslobazar').send_keys(getattr(self.user, 'password'))
 
         self.driver.find_element(By.CLASS_NAME, 'ovse').click()
-        self.driver.find_element(By.XPATH, XPathsBazos.product_img_input).send_keys('\n'.join(product.images))
+
+        if product.images:
+            self.driver.find_element(By.XPATH, XPathsBazos.product_img_input).send_keys('\n'.join(product.images))
 
         self.driver.find_element(By.XPATH, XPathsBazos.product_submit).click()
 
@@ -261,11 +267,11 @@ class BazosScrapper:
 
             if self.product_already_advertised(product):
                 if self.args['verbose']:
-                    print(f"Skipping[{idx}/{self.advertisements}]: {product.product_path}")
+                    print(f"Skipping[{idx + 1}/{self.advertisements}]: {product.product_path}")
                 continue
 
             if self.args['verbose']:
-                print(f"Adding[{idx}/{self.advertisements}]: {product.product_path}")
+                print(f"Adding[{idx + 1}/{self.advertisements}]: {product.product_path}")
 
             # product not advertised ADD them
             self.driver.find_element(By.CLASS_NAME, 'pridati').click()  # go to add page
