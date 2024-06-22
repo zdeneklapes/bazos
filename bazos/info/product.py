@@ -48,6 +48,9 @@ class Product:
         self.currency_rates = CurrencyRates()
 
     def get_images(self):
+        if not path.isdir(path.join(self.product_path, 'photos')):
+            return []
+
         images = sorted(map(lambda x: path.join(self.product_path, 'photos', x),
                             next(os.walk(path.join(self.product_path, 'photos')))[2]))
         return [filename for filename in images if
@@ -76,7 +79,7 @@ class Product:
                         line=line)
                     continue
 
-                if line.replace(' ', '').replace('\t', '').replace('\n', '') == '':
+                if line.replace(' ', '').replace('\t', '').replace('\n', '') == '' and current_product_info_key != 'description':
                     continue
 
                 if product_info[current_product_info_key] == product_info['rubric']:
